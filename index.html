@@ -6,7 +6,7 @@
 <title>Inspección Preoperacional Montacargas</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#1A1A2E;color:#E0DED8;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#1A1A2E;color:#E0DED8;font-size:16px;}
 .app{max-width:420px;margin:0 auto;background:#16213E;min-height:100vh;padding:0 0 3rem;}
 .header{background:#0F3460;border-bottom:1px solid #1A4A8A;padding:1rem 1.25rem 0.875rem;position:sticky;top:0;z-index:10;}
 .header-logos{display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:0.6rem;}
@@ -21,7 +21,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .login-screen h2{font-size:20px;font-weight:500;color:#E0DED8;margin-bottom:0.5rem;}
 .login-screen p{font-size:13px;color:#888;margin-bottom:1.5rem;}
 .operario-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:1.5rem;}
-.op-btn{padding:12px 8px;border-radius:10px;border:1px solid #2A3A5A;background:#1E2D4A;color:#C0D0E8;font-size:14px;font-weight:500;cursor:pointer;transition:all 0.15s;}
+.op-btn{padding:14px 8px;border-radius:10px;border:1px solid #2A3A5A;background:#1E2D4A;color:#C0D0E8;font-size:16px;font-weight:500;cursor:pointer;transition:all 0.15s;}
 .op-btn:hover{background:#2A3A5A;}
 .op-btn.selected{border:2px solid #4A9EF5;background:#1A3A6A;color:#E6F1FB;}
 .pin-container{margin-bottom:1rem;}
@@ -43,18 +43,18 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 input[type=text],input[type=number],textarea{width:100%;font-size:15px;padding:10px 12px;border-radius:8px;border:1px solid #2A3A5A;background:#1E2D4A;color:#E0DED8;}
 textarea{resize:none;font-family:inherit;}
 .maquinas-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;}
-.maq-btn{padding:12px 8px;border-radius:10px;border:1px solid #2A3A5A;background:#1E2D4A;color:#C0D0E8;font-size:13px;font-weight:500;cursor:pointer;text-align:center;transition:all 0.15s;}
+.maq-btn{padding:14px 8px;border-radius:10px;border:1px solid #2A3A5A;background:#1E2D4A;color:#C0D0E8;font-size:15px;font-weight:500;cursor:pointer;text-align:center;transition:all 0.15s;}
 .maq-btn:hover{background:#2A3A5A;}
 .maq-btn.selected{border:2px solid #4A9EF5;background:#1A3A6A;color:#E6F1FB;}
 .glp-row{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;background:#2A2010;border-radius:8px;border:1px solid #6A4010;color:#FAC775;}
 .section-divider{padding:0.75rem 1.25rem 0.35rem;border-top:1px solid #1E2D4A;}
 .section-divider:first-child{border-top:none;}
-.section-title-text{font-size:11px;font-weight:600;color:#4A9EF5;text-transform:uppercase;letter-spacing:0.06em;}
+.section-title-text{font-size:12px;font-weight:700;color:#4A9EF5;text-transform:uppercase;letter-spacing:0.06em;}
 .item-row{display:flex;align-items:center;justify-content:space-between;padding:10px 1.25rem;border-bottom:1px solid #1E2D4A;gap:12px;}
-.item-label{font-size:13px;color:#E0DED8;flex:1;line-height:1.35;}
-.item-std{font-size:11px;color:#555;margin-top:2px;}
+.item-label{font-size:15px;color:#E0DED8;flex:1;line-height:1.4;}
+.item-std{font-size:12px;color:#666;margin-top:3px;}
 .bm-toggle{display:flex;border-radius:8px;overflow:hidden;border:1px solid #2A3A5A;flex-shrink:0;}
-.bm-btn{padding:8px 14px;font-size:13px;font-weight:600;cursor:pointer;border:none;background:#1E2D4A;color:#555;transition:all 0.12s;}
+.bm-btn{padding:10px 16px;font-size:15px;font-weight:600;cursor:pointer;border:none;background:#1E2D4A;color:#555;transition:all 0.12s;}
 .bm-btn.s-active{background:#1A5C1A;color:#7FE07F;}
 .bm-btn.n-active{background:#6C1A1A;color:#F08080;}
 .bm-btn:hover:not(.s-active):not(.n-active){background:#2A3A5A;color:#C0D0E8;}
@@ -63,12 +63,19 @@ textarea{resize:none;font-family:inherit;}
 .btn-primary:hover{background:#0C447C;}
 .btn-primary:disabled{background:#2A3A5A;color:#555;cursor:not-allowed;}
 .btn-secondary{width:100%;padding:11px;border-radius:10px;border:1px solid #2A3A5A;background:transparent;color:#C0D0E8;font-size:14px;cursor:pointer;margin-top:8px;}
-.counter{font-size:12px;color:#888;text-align:right;margin-bottom:6px;}
+.counter{font-size:14px;color:#888;text-align:right;margin-bottom:6px;}
 .summary-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #1E2D4A;font-size:13px;}
 .badge-ok{background:#1A5C1A;color:#7FE07F;padding:2px 8px;border-radius:6px;font-size:12px;font-weight:500;}
 .malo-item{font-size:12px;padding:6px 10px;background:#3A1A1A;color:#F08080;border-radius:6px;margin-bottom:5px;}
 .success-card{padding:2rem 1.25rem;text-align:center;}
 .success-icon{width:64px;height:64px;border-radius:50%;background:#1A5C1A;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;font-size:32px;}
+
+.phase-banner{margin:0;padding:14px 1.25rem;display:flex;align-items:center;gap:12px;}
+.phase-banner-est{background:linear-gradient(135deg,#0F3460,#1A4A8A);}
+.phase-banner-din{background:linear-gradient(135deg,#1A3A1A,#2A5A2A);}
+.phase-banner-icon{font-size:24px;}
+.phase-banner-text h3{font-size:17px;font-weight:600;color:#fff;margin:0;}
+.phase-banner-text p{font-size:13px;color:rgba(255,255,255,0.65);margin:2px 0 0;}
 .spinner{display:inline-block;width:16px;height:16px;border:2px solid #2A3A5A;border-top-color:#4A9EF5;border-radius:50%;animation:spin 0.7s linear infinite;vertical-align:-3px;margin-right:6px;}
 @keyframes spin{to{transform:rotate(360deg);}}
 </style>
@@ -135,7 +142,7 @@ textarea{resize:none;font-family:inherit;}
   </div>
 
   <div class="step" id="step-2">
-    <div class="step-header"><h2>Chequeo estatico</h2><p>Motor apagado - 20 items</p></div>
+    <div class="phase-banner phase-banner-est"><div class="phase-banner-icon">🔧</div><div class="phase-banner-text"><h3>Chequeo Estático</h3><p>Motor apagado · 20 ítems</p></div></div>
     <div id="estatico-items"></div>
     <div style="height:1rem"></div>
     <div class="bottom-bar">
@@ -145,7 +152,7 @@ textarea{resize:none;font-family:inherit;}
   </div>
 
   <div class="step" id="step-3">
-    <div class="step-header"><h2>Chequeo dinamico</h2><p>Motor encendido - 9 items</p></div>
+    <div class="phase-banner phase-banner-din"><div class="phase-banner-icon">⚙️</div><div class="phase-banner-text"><h3>Chequeo Dinámico</h3><p>Motor encendido · 9 ítems</p></div></div>
     <div id="dinamico-items"></div>
     <div style="height:1rem"></div>
     <div class="bottom-bar">
