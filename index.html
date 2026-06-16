@@ -453,7 +453,7 @@ async function enviar() {
     total_no: noItems.length
   };
   try {
-    if (SHEET_URL !== 'TU_URL_DE_APPS_SCRIPT_AQUI') {
+    if (SHEET_URL !== 'https://script.google.com/macros/s/AKfycbw-xg_v6Njh3WpiM762mz6el3OGegAaotQwaEYLa9Xt2TUi7TQtwmLzVilraLlZKcV5WQ/exec') {
       await fetch(SHEET_URL, {method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
     } else {
       await new Promise(function(r){ setTimeout(r, 900); });
