@@ -453,11 +453,12 @@ async function enviar() {
     total_no: noItems.length
   };
   try {
-    if (SHEET_URL !== 'https://script.google.com/macros/s/AKfycbzo77z9SxOnas0nSfq8G9sExvEIXXh5-A9DdtM1CR0udEAzDJdOabAwI0_RbJbeT4CILQ/exec') {
-      await fetch(SHEET_URL, {method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
-    } else {
-      await new Promise(function(r){ setTimeout(r, 900); });
-    }
+    await fetch(SHEET_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify(payload)
+    });
     goStep(5);
     if (noItems.length > 0) {
       var a = document.getElementById('malos-alert');
