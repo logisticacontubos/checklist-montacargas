@@ -433,10 +433,28 @@ function buildResumen() {
   document.getElementById('resumen-content').innerHTML = html;
 }
 
-async function enviar() {
-  var btn = document.getElementById('btn4');
-  btn.innerHTML = '<span class="spinner"></span>Guardando...';
-  btn.disabled = true;
+async function postWithRetry(payload, maxRetries) {
+  maxRetries = maxRetries || 3;
+  for (var attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      await fetch(SHEET_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'text/plain' },
+        body: JSON.stringify(payload)
+      });
+      return true;
+    } catch (e) {
+      console.error('Intento ' + attempt + ' fallido:', e);
+    }
+    if (attempt < maxRetries) {
+      await new Promise(function(r){ setTimeout(r, 1000 * attempt); });
+    }
+  }
+  return false;
+}
+
+function enviar() {
   var now = new Date();
   var noItems = getNoItems();
   var payload = {
@@ -452,24 +470,17 @@ async function enviar() {
     items_no: noItems.join(' | '),
     total_no: noItems.length
   };
-  try {
-    await fetch(SHEET_URL, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'text/plain' },
-      body: JSON.stringify(payload)
-    });
-    goStep(5);
-    if (noItems.length > 0) {
-      var a = document.getElementById('malos-alert');
-      a.style.display = 'block';
-      a.innerHTML = '<strong>Notificar al supervisor:</strong><br>' + noItems.join('<br>');
-    }
-  } catch(err) {
-    btn.innerHTML = 'Guardar en Sheets';
-    btn.disabled = false;
-    alert('Error al guardar. Verifica la conexion.');
+
+  goStep(5);
+  if (noItems.length > 0) {
+    var a = document.getElementById('malos-alert');
+    a.style.display = 'block';
+    a.innerHTML = '<strong>Notificar al supervisor:</strong><br>' + noItems.join('<br>');
   }
+
+  postWithRetry(payload).then(function(ok) {
+    if (!ok) console.error('No se pudo guardar tras varios intentos');
+  });
 }
 
 function reiniciar() {
