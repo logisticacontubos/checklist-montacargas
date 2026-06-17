@@ -59,8 +59,8 @@ textarea{resize:none;font-family:inherit;}
 .bm-btn.n-active{background:#E0383D;color:#FFFFFF;}
 .bm-btn:hover:not(.s-active):not(.n-active){background:#2A3A5A;color:#C0D0E8;}
 .bottom-bar{position:sticky;bottom:0;background:#16213E;border-top:1px solid #1E2D4A;padding:0.875rem 1.25rem;}
-.btn-primary{width:100%;padding:13px;border-radius:10px;border:none;background:#185FA5;color:#E6F1FB;font-size:15px;font-weight:500;cursor:pointer;}
-.btn-primary:hover{background:#0C447C;}
+.btn-primary{width:100%;padding:16px;border-radius:10px;border:none;background:#2E8FE8;color:#FFFFFF;font-size:17px;font-weight:700;cursor:pointer;box-shadow:0 4px 12px rgba(46,143,232,0.4);}
+.btn-primary:hover{background:#1864C4;}
 .btn-primary:disabled{background:#2A3A5A;color:#555;cursor:not-allowed;}
 .btn-secondary{width:100%;padding:11px;border-radius:10px;border:1px solid #2A3A5A;background:transparent;color:#C0D0E8;font-size:14px;cursor:pointer;margin-top:8px;}
 .counter{font-size:14px;color:#888;text-align:right;margin-bottom:6px;}
@@ -126,15 +126,7 @@ textarea{resize:none;font-family:inherit;}
       <div class="field-label">Horometro inicial</div>
       <input type="number" id="horometro" placeholder="Ej: 2450"/>
     </div>
-    <div class="field-group">
-      <div class="field-label">Cilindro GLP - Serial</div>
-      <div class="glp-row">
-        <span style="font-size:20px;flex-shrink:0">🔥</span>
-        <div style="flex:1">
-          <div style="font-size:11px;margin-bottom:4px">Combustible: <strong>GLP</strong></div>
-          <input type="text" id="serial_glp" placeholder="Serial del cilindro" style="font-size:13px;padding:7px 10px;background:rgba(0,0,0,0.3);color:#FAC775;border-color:#6A4010;"/>
-        </div>
-      </div>
+    
     </div>
     <div class="bottom-bar">
       <button class="btn-primary" id="btn1" disabled>Iniciar inspeccion</button>
@@ -169,7 +161,7 @@ textarea{resize:none;font-family:inherit;}
       <textarea id="observaciones" rows="4" placeholder="Escribe aqui cualquier novedad u observacion adicional..."></textarea>
     </div>
     <div class="bottom-bar">
-      <button class="btn-primary" id="btn4">Guardar en Sheets</button>
+      <button class="btn-primary" id="btn4">Guardar inspección</button>
       <button class="btn-secondary" id="btn4b">Volver</button>
     </div>
   </div>
@@ -423,7 +415,6 @@ function buildResumen() {
   var html = '<div class="summary-row"><span style="color:#888">Operario</span><span style="font-weight:500;color:#4A9EF5">'+nombreOp+'</span></div>'
     + '<div class="summary-row"><span style="color:#888">Maquina</span><span style="font-weight:500">'+maqSeleccionada+'</span></div>'
     + '<div class="summary-row"><span style="color:#888">Horometro</span><span style="font-weight:500">'+(document.getElementById('horometro').value||'—')+' h</span></div>'
-    + '<div class="summary-row"><span style="color:#888">Serial GLP</span><span style="font-weight:500">'+(document.getElementById('serial_glp').value||'—')+'</span></div>'
     + '<div class="summary-row"><span style="color:#888">Items OK</span><span class="badge-ok">'+(total-noItems.length)+' / '+total+'</span></div>';
   if (noItems.length > 0) {
     html += '<div style="margin-top:1rem"><div style="font-size:12px;font-weight:600;color:#F08080;margin-bottom:8px">⚠ '+noItems.length+' item(s) en NO</div>';
@@ -463,7 +454,6 @@ function enviar() {
     nombre: nombreOp,
     maquina: maqSeleccionada,
     horometro: document.getElementById('horometro').value,
-    serial_glp: document.getElementById('serial_glp').value,
     observaciones: document.getElementById('observaciones').value,
     estatico: Object.values(respEst),
     dinamico: Object.values(respDin),
@@ -494,7 +484,7 @@ function reiniciar() {
   document.getElementById('pin-container').style.display = 'none';
   document.getElementById('pin-error').textContent = '';
   document.getElementById('btn1').disabled = true;
-  document.getElementById('btn4').innerHTML = 'Guardar en Sheets';
+  document.getElementById('btn4').innerHTML = 'Guardar inspección';
   document.getElementById('btn4').disabled = false;
   updateDots();
   buildSection(ESTATICO,'e_','estatico-items');
