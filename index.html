@@ -52,6 +52,8 @@ textarea{resize:none;font-family:inherit;}
 .emp-tecnipapel{background:#0F2A0F;color:#7FE07F;}
 .maq-desc{font-size:12px;color:#8AA8D0;margin-top:4px;line-height:1.3;}
 .glp-row{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;background:#2A2010;border-radius:8px;border:1px solid #6A4010;color:#FAC775;}
+.horo-row{display:flex;align-items:center;gap:10px;padding:10px 12px;background:#16243F;border-radius:8px;border:1px solid #1A4A8A;color:#A8C8F0;}
+.horo-row input{flex:1;}
 .section-divider{padding:0.75rem 1.25rem 0.35rem;border-top:1px solid #1E2D4A;}
 .section-divider:first-child{border-top:none;}
 .section-title-text{font-size:12px;font-weight:700;color:#4A9EF5;text-transform:uppercase;letter-spacing:0.06em;}
@@ -127,18 +129,11 @@ textarea{resize:none;font-family:inherit;}
       <div class="field-label">Maquina</div>
       <div class="maquinas-grid" id="maq-grid"></div>
     </div>
-    <div class="field-group">
-      <div class="field-label">Horometro inicial</div>
-      <input type="number" id="horometro" placeholder="Ej: 2450"/>
-    </div>
-    <div class="field-group" id="glp-field">
-      <div class="field-label">Cilindro GLP - Serial</div>
-      <div class="glp-row">
-        <span style="font-size:20px;flex-shrink:0">&#128293;</span>
-        <div style="flex:1">
-          <div style="font-size:12px;margin-bottom:4px">Combustible: <strong>GLP</strong></div>
-          <input type="text" id="serial_glp" placeholder="Serial del cilindro" style="font-size:14px;padding:8px 10px;background:rgba(0,0,0,0.3);color:#FAC775;border-color:#6A4010;"/>
-        </div>
+    <div class="field-group" id="horometro-field">
+      <div class="field-label">Horometro inicial *</div>
+      <div class="horo-row">
+        <span style="font-size:20px;flex-shrink:0">&#9201;&#65039;</span>
+        <input type="number" id="horometro" placeholder="Ej: 2450" style="font-size:16px;padding:10px 12px;background:rgba(0,0,0,0.3);color:#A8C8F0;border-color:#1A4A8A;"/>
       </div>
     </div>
     <div class="bottom-bar">
@@ -332,6 +327,8 @@ pinKeys.forEach(function(k) {
   pinPad.appendChild(btn);
 });
 
+document.getElementById('horometro').addEventListener('input', checkStep1Valid);
+
 document.getElementById('btn1').addEventListener('click', function() { goStep(2); });
 document.getElementById('btn2').addEventListener('click', function() { if (maqEsGato) { goStep(4); } else { goStep(3); } });
 document.getElementById('btn3').addEventListener('click', function() { goStep(4); });
@@ -431,8 +428,14 @@ function selectMaq(btn, maquina) {
   btn.classList.add('selected');
   maqSeleccionada = maquina.id;
   maqEsGato = maquina.esGato;
-  document.getElementById('glp-field').style.display = maqEsGato ? 'none' : 'block';
-  document.getElementById('btn1').disabled = false;
+  document.getElementById('horometro-field').style.display = maqEsGato ? 'none' : 'block';
+  if (maqEsGato) { document.getElementById('horometro').value = ''; }
+  checkStep1Valid();
+}
+
+function checkStep1Valid() {
+  var horometroOk = maqEsGato || document.getElementById('horometro').value.trim() !== '';
+  document.getElementById('btn1').disabled = !(maqSeleccionada && horometroOk);
 }
 
 function setupStep2() {
@@ -478,10 +481,9 @@ function buildResumen() {
   var noItems = getNoItems();
   var total = totalEst + totalDin;
   var html = '<div class="summary-row"><span style="color:#888">Operario</span><span style="font-weight:500;color:#4A9EF5">'+nombreOp+'</span></div>'
-    + '<div class="summary-row"><span style="color:#888">Maquina</span><span style="font-weight:500">'+maqSeleccionada+'</span></div>'
-    + '<div class="summary-row"><span style="color:#888">Horometro</span><span style="font-weight:500">'+(document.getElementById('horometro').value||'--')+' h</span></div>';
+    + '<div class="summary-row"><span style="color:#888">Maquina</span><span style="font-weight:500">'+maqSeleccionada+'</span></div>';
   if (!maqEsGato) {
-    html += '<div class="summary-row"><span style="color:#888">Serial GLP</span><span style="font-weight:500">'+(document.getElementById('serial_glp').value||'--')+'</span></div>';
+    html += '<div class="summary-row"><span style="color:#888">Horometro</span><span style="font-weight:500">'+(document.getElementById('horometro').value||'--')+' h</span></div>';
   }
   html += '<div class="summary-row"><span style="color:#888">Items OK</span><span class="badge-ok">'+(total-noItems.length)+' / '+total+'</span></div>';
   if (noItems.length > 0) {
@@ -504,8 +506,7 @@ async function enviar() {
     nombre: nombreOp,
     maquina: maqSeleccionada,
     tipo_equipo: maqEsGato ? 'Gato electrico' : 'Montacargas',
-    horometro: document.getElementById('horometro').value,
-    serial_glp: maqEsGato ? '' : document.getElementById('serial_glp').value,
+    horometro: maqEsGato ? '' : document.getElementById('horometro').value,
     observaciones: document.getElementById('observaciones').value,
     estatico: Object.values(respEst),
     dinamico: Object.values(respDin),
@@ -536,7 +537,6 @@ function reiniciar() {
   document.querySelectorAll('.op-btn').forEach(function(b){ b.classList.remove('selected'); });
   document.querySelectorAll('.maq-btn').forEach(function(b){ b.classList.remove('selected'); });
   document.getElementById('horometro').value = '';
-  document.getElementById('serial_glp').value = '';
   document.getElementById('observaciones').value = '';
   document.getElementById('malos-alert').style.display = 'none';
   document.getElementById('pin-container').style.display = 'none';
@@ -544,7 +544,7 @@ function reiniciar() {
   document.getElementById('btn1').disabled = true;
   document.getElementById('btn4').innerHTML = 'Guardar en Sheets';
   document.getElementById('btn4').disabled = false;
-  document.getElementById('glp-field').style.display = 'block';
+  document.getElementById('horometro-field').style.display = 'block';
   updateDots();
   recalcTotales();
   document.querySelectorAll('.step').forEach(function(s){ s.classList.remove('active'); });
