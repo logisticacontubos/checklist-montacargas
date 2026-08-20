@@ -402,7 +402,7 @@ textarea{resize:none;font-family:inherit;}
 </div><!-- /app -->
 
 <script>
-var SHEET_URL = 'https://script.google.com/macros/s/AKfycbzvWpxHydJosW8jGiF0mjDT2t-I0uPKWgytSyw9Q3JvrqQyAD-jGd9CXV4Kgb3nL8Wv8A/exec';
+var SHEET_URL = 'https://script.google.com/macros/s/AKfycbyFQllYA-1UFta98pdIkKKctdbE-6qNjrJRS6VCnxxwZ-ApT-XZSwiFJPbZYQoWhbf6GA/exec';
 
 var MAQUINAS = [
   {id:'CON-1',emp:'CONTUBOS',tipo:'Montacargas Clamp',nota:'Nueva (pequeña)',esGato:false},
@@ -984,6 +984,12 @@ function renderFlota() {
     if (flotaFiltro === 'todos') return true;
     if (flotaFiltro === 'alerta') return e.semaforo !== 'verde';
     return String(e.empresa).toUpperCase() === flotaFiltro.toUpperCase();
+  });
+
+  // Ordenar: rojo primero, luego amarillo, luego verde
+  var semOrder = { 'rojo': 0, 'amarillo': 1, 'verde': 2 };
+  filtered.sort(function(a, b) {
+    return (semOrder[a.semaforo] || 2) - (semOrder[b.semaforo] || 2);
   });
 
   if (filtered.length === 0) {
