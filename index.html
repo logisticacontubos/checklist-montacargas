@@ -118,8 +118,8 @@ textarea{resize:none;font-family:inherit;}
 .spinner{display:inline-block;width:16px;height:16px;border:2px solid #F0B0C0;border-top-color:#D01148;border-radius:50%;animation:spin 0.7s linear infinite;vertical-align:-3px;margin-right:6px;}
 @keyframes spin{to{transform:rotate(360deg);}}
 
-.jefe-shell{display:none;flex-direction:column;flex:1;}
-.jefe-nav{background:#fff;border-bottom:1px solid #E0DED8;padding:0 1.25rem;display:flex;gap:0;position:sticky;top:72px;z-index:9;box-shadow:0 1px 4px rgba(0,0,0,0.04);}
+.jefe-shell{display:none;flex-direction:column;position:fixed;inset:0;background:#F0EEE8;z-index:50;overflow-y:auto;}
+.jefe-nav{background:#fff;border-bottom:1px solid #E0DED8;padding:0 1.25rem;display:flex;gap:0;position:sticky;top:57px;z-index:9;box-shadow:0 1px 4px rgba(0,0,0,0.04);}
 .jnav-btn{flex:1;padding:10px 4px;font-size:12px;font-weight:500;color:#888;border:none;background:transparent;cursor:pointer;border-bottom:2px solid transparent;transition:all 0.2s;}
 .jnav-btn.active{color:#D01148;border-bottom-color:#D01148;}
 .jpanel{display:none;background:#F0EEE8;min-height:calc(100vh - 130px);}
@@ -214,6 +214,14 @@ textarea{resize:none;font-family:inherit;}
 .form-equipo{display:none;position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:440px;background:#fff;border-radius:16px 16px 0 0;box-shadow:0 -4px 20px rgba(0,0,0,0.15);z-index:100;padding:1.25rem;max-height:80vh;overflow-y:auto;}
 .form-equipo.open{display:block;}
 
+
+.jefe-header{background:#fff;border-bottom:1px solid #E0DED8;padding:12px 1.25rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10;box-shadow:0 1px 4px rgba(0,0,0,0.06);}
+.jefe-header-logos{display:flex;align-items:center;gap:10px;}
+.jefe-header-logos img{height:22px;object-fit:contain;}
+.jefe-header-title{font-size:13px;font-weight:600;color:#1A1A1A;text-align:center;flex:1;}
+.loading-overlay{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:3rem;gap:12px;}
+.loading-spinner{width:36px;height:36px;border:3px solid #E0DED8;border-top-color:#D01148;border-radius:50%;animation:spin 0.8s linear infinite;}
+.loading-text{font-size:14px;color:#888;}
 </style>
 </head>
 <body>
@@ -929,6 +937,13 @@ var flotaFiltro = 'todos';
 var equipoActual = null;
 
 async function initJefe() {
+  // Copiar logos al header del jefe
+  var logosMain = document.querySelectorAll('.header-logos img');
+  var jhLogos = document.querySelectorAll('.jefe-header-logos img');
+  if(logosMain.length >= 2 && jhLogos.length >= 2){
+    jhLogos[0].src = logosMain[0].src;
+    jhLogos[1].src = logosMain[1].src;
+  }
   document.getElementById('jefe-shell').style.display = 'flex';
   await cargarFlota();
   renderKPIs();
@@ -1262,11 +1277,11 @@ function renderAlertas() {
   }).join('');
 }
 
-function switchJefePanel(panel) {
+function switchJefePanel(panel, btn) {
   document.querySelectorAll('.jpanel').forEach(function(p){ p.classList.remove('active'); });
   document.querySelectorAll('.jnav-btn').forEach(function(b){ b.classList.remove('active'); });
   document.getElementById('jpanel-' + panel).classList.add('active');
-  event.target.classList.add('active');
+  if(btn) btn.classList.add('active'); else if(event && event.target) event.target.classList.add('active');
   if (panel === 'kpis') renderKPIs();
   if (panel === 'alertas') renderAlertas();
 }
@@ -1279,11 +1294,19 @@ function jefeLogout() {
 </script>
 
 <div id="jefe-shell" class="jefe-shell">
+  <div class="jefe-header">
+    <div class="jefe-header-logos">
+      <img src="" id="jh-logo-c" alt="Contubos"/>
+      <div style="width:1px;height:18px;background:#D0CEC8;"></div>
+      <img src="" id="jh-logo-t" alt="Tecnipapel"/>
+    </div>
+    <div class="jefe-header-title">Panel Jefe</div>
+    <button onclick="jefeLogout()" style="font-size:12px;color:#D01148;font-weight:500;border:none;background:transparent;cursor:pointer;">Salir ↩</button>
+  </div>
   <div class="jefe-nav">
-    <button class="jnav-btn active" onclick="switchJefePanel('flota')">🚜 Flota</button>
-    <button class="jnav-btn" onclick="switchJefePanel('kpis')">📊 KPIs</button>
-    <button class="jnav-btn" onclick="switchJefePanel('alertas')">🔔 Alertas</button>
-    <button class="jnav-btn" onclick="jefeLogout()">↩ Salir</button>
+    <button class="jnav-btn active" onclick="switchJefePanel('flota',this)">🚜 Flota</button>
+    <button class="jnav-btn" onclick="switchJefePanel('kpis',this)">📊 KPIs</button>
+    <button class="jnav-btn" onclick="switchJefePanel('alertas',this)">🔔 Alertas</button>
   </div>
 
   <!-- PANEL FLOTA -->
@@ -1302,12 +1325,12 @@ function jefeLogout() {
       <div class="ftab" onclick="filtrarFlota('alerta',this)">⚠ Alertas</div>
     </div>
     <div class="equipo-list" id="equipo-list">
-      <div style="padding:20px;text-align:center;color:#AAA;font-size:13px;">Cargando flota...</div>
+      <div class="loading-overlay"><div class="loading-spinner"></div><div class="loading-text">Cargando flota...</div></div>
     </div>
 
     <!-- Detalle equipo -->
     <div class="det-shell" id="det-shell">
-      <div class="det-back" onclick="cerrarDetalle()">← Volver a flota</div>
+      <div class="det-back" onclick="cerrarDetalle()">← Regresar a lista de equipos</div>
       <div id="det-alerta"></div>
       <div class="det-card">
         <div class="det-card-title">Datos técnicos</div>
