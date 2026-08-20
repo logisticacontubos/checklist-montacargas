@@ -1228,7 +1228,8 @@ function abrirFormNuevoEquipo() {
   alert('Función disponible próximamente.');
 }
 
-function renderKPIs() {
+async function renderKPIs() {
+  // KPIs de flota (ya cargados)
   var verde = flotaData.filter(function(e){ return e.semaforo === 'verde'; }).length;
   var alerta = flotaData.filter(function(e){ return e.semaforo !== 'verde'; }).length;
   document.getElementById('kpi-ok').textContent = verde;
@@ -1239,18 +1240,74 @@ function renderKPIs() {
   var proximos = flotaData
     .filter(function(e){ return (parseFloat(e.horas_restantes) || 0) <= 50; })
     .sort(function(a,b){ return (a.horas_restantes||0) - (b.horas_restantes||0); });
-
-  var div = document.getElementById('kpi-proximos');
+  var divProx = document.getElementById('kpi-proximos');
   if (proximos.length === 0) {
-    div.innerHTML = '<div style="font-size:13px;color:#AAA;text-align:center;padding:10px;">Todos los equipos tienen mantenimiento al día.</div>';
+    divProx.innerHTML = '<div style="font-size:13px;color:#27A846;text-align:center;padding:10px;">✓ Todos los equipos al día.</div>';
   } else {
-    div.innerHTML = proximos.map(function(e) {
+    divProx.innerHTML = proximos.map(function(e) {
       var h = Math.round(e.horas_restantes || 0);
       var color = h < 0 ? '#D01148' : h <= 20 ? '#F0A500' : '#888';
-      return '<div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #F0EEE8;font-size:13px;">'
+      return '<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #F0EEE8;font-size:13px;">'
         + '<span style="font-weight:500;">' + e.id + ' <span style="font-weight:400;color:#888;font-size:11px;">' + e.descripcion + '</span></span>'
         + '<span style="font-weight:600;color:' + color + ';">' + (h < 0 ? 'Vencido' : '+' + h + ' h') + '</span></div>';
     }).join('');
+  }
+
+  // KPIs del Sheet (inspecciones reales)
+  try {
+    var resp = await fetch(SHEET_URL + '?action=getKPIs');
+    var data = await resp.json();
+    if (data.status === 'ok') {
+      var k = data.kpis;
+      document.getElementById('kpi-realizadas').textContent = k.equipos_inspeccionados_hoy;
+      document.getElementById('kpi-nos').textContent = k.nos_semana;
+      if (k.fecha_hoy) document.getElementById('kpi-fecha-hoy').textContent = k.fecha_hoy;
+
+      // Sin inspección hoy
+      var divSin = document.getElementById('kpi-sin-inspeccion');
+      if (k.equipos_sin_inspeccion_hoy.length === 0) {
+        divSin.innerHTML = '<div style="font-size:13px;color:#27A846;text-align:center;padding:8px;">✓ Todos los equipos inspeccionados hoy.</div>';
+      } else {
+        divSin.innerHTML = k.equipos_sin_inspeccion_hoy.map(function(eq) {
+          return '<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid #F0EEE8;">'
+            + '<span style="width:8px;height:8px;border-radius:50%;background:#D01148;display:inline-block;flex-shrink:0;"></span>'
+            + '<span style="font-size:13px;font-weight:500;">' + eq + '</span></div>';
+        }).join('');
+      }
+
+      // Top NOs
+      var divNos = document.getElementById('kpi-top-nos');
+      if (k.top_nos_semana.length === 0) {
+        divNos.innerHTML = '<div style="font-size:13px;color:#27A846;text-align:center;padding:8px;">✓ Sin ítems en NO esta semana.</div>';
+      } else {
+        var maxCount = k.top_nos_semana[0].count;
+        divNos.innerHTML = k.top_nos_semana.map(function(x) {
+          var pct = Math.round((x.count / maxCount) * 100);
+          return '<div style="margin-bottom:10px;">'
+            + '<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px;">'
+            + '<span style="color:#1A1A1A;">' + x.item + '</span>'
+            + '<span style="font-weight:600;color:#D01148;">' + x.count + 'x</span></div>'
+            + '<div style="background:#F0EEE8;border-radius:3px;height:5px;"><div style="background:#D01148;height:5px;border-radius:3px;width:' + pct + '%;"></div></div>'
+            + '</div>';
+        }).join('');
+      }
+
+      // Por operario
+      var divOp = document.getElementById('kpi-por-operario');
+      var ops = Object.entries(k.por_operario).sort(function(a,b){ return b[1].inspecciones - a[1].inspecciones; });
+      if (ops.length === 0) {
+        divOp.innerHTML = '<div style="font-size:13px;color:#AAA;text-align:center;padding:8px;">Sin registros.</div>';
+      } else {
+        divOp.innerHTML = ops.map(function(op) {
+          return '<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid #F0EEE8;font-size:13px;">'
+            + '<span style="font-weight:500;">' + op[0] + '</span>'
+            + '<span style="color:#888;">' + op[1].inspecciones + ' insp. · <span style="color:' + (op[1].nos > 0 ? '#D01148' : '#27A846') + ';">' + op[1].nos + ' NOs</span></span>'
+            + '</div>';
+        }).join('');
+      }
+    }
+  } catch(e) {
+    console.error('Error cargando KPIs:', e);
   }
 }
 
@@ -1355,36 +1412,62 @@ function jefeLogout() {
 
   <!-- PANEL KPIs -->
   <div id="jpanel-kpis" class="jpanel">
-    <div style="padding:1rem;">
+    <div style="padding:0.75rem;">
+
+      <!-- Inspecciones hoy -->
       <div style="background:#fff;border-radius:12px;padding:14px;margin-bottom:8px;box-shadow:0 1px 4px rgba(0,0,0,0.06);">
-        <div style="font-size:13px;font-weight:600;color:#D01148;margin-bottom:10px;text-transform:uppercase;letter-spacing:0.04em;">Inspecciones de hoy</div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+          <div style="font-size:12px;font-weight:700;color:#D01148;text-transform:uppercase;letter-spacing:0.04em;">Inspecciones de hoy</div>
+          <div style="font-size:11px;color:#AAA;" id="kpi-fecha-hoy"></div>
+        </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;" id="kpi-grid">
           <div style="background:#F8F7F4;border-radius:8px;padding:10px;">
-            <div style="font-size:11px;color:#AAA;">Realizadas</div>
-            <div style="font-size:24px;font-weight:700;color:#1A1A1A;" id="kpi-realizadas">-</div>
-            <div style="font-size:11px;color:#888;">de <span id="kpi-total-eq">8</span> equipos</div>
+            <div style="font-size:11px;color:#AAA;">Realizadas hoy</div>
+            <div style="font-size:28px;font-weight:700;color:#1A1A1A;line-height:1;" id="kpi-realizadas">-</div>
+            <div style="font-size:11px;color:#888;margin-top:2px;">de <span id="kpi-total-eq">-</span> equipos</div>
           </div>
           <div style="background:#F8F7F4;border-radius:8px;padding:10px;">
-            <div style="font-size:11px;color:#AAA;">Ítems en NO</div>
-            <div style="font-size:24px;font-weight:700;color:#D01148;" id="kpi-nos">-</div>
-            <div style="font-size:11px;color:#888;">esta semana</div>
+            <div style="font-size:11px;color:#AAA;">NOs esta semana</div>
+            <div style="font-size:28px;font-weight:700;color:#D01148;line-height:1;" id="kpi-nos">-</div>
+            <div style="font-size:11px;color:#888;margin-top:2px;">ítems en NO</div>
           </div>
           <div style="background:#F8F7F4;border-radius:8px;padding:10px;">
-            <div style="font-size:11px;color:#AAA;">Equipos OK</div>
-            <div style="font-size:24px;font-weight:700;color:#27A846;" id="kpi-ok">-</div>
-            <div style="font-size:11px;color:#888;">semáforo verde</div>
+            <div style="font-size:11px;color:#AAA;">Flota OK</div>
+            <div style="font-size:28px;font-weight:700;color:#27A846;line-height:1;" id="kpi-ok">-</div>
+            <div style="font-size:11px;color:#888;margin-top:2px;">semáforo verde</div>
           </div>
           <div style="background:#F8F7F4;border-radius:8px;padding:10px;">
-            <div style="font-size:11px;color:#AAA;">Requieren atención</div>
-            <div style="font-size:24px;font-weight:700;color:#F0A500;" id="kpi-alerta">-</div>
-            <div style="font-size:11px;color:#888;">amarillo + rojo</div>
+            <div style="font-size:11px;color:#AAA;">Con alertas</div>
+            <div style="font-size:28px;font-weight:700;color:#F0A500;line-height:1;" id="kpi-alerta">-</div>
+            <div style="font-size:11px;color:#888;margin-top:2px;">amarillo + rojo</div>
           </div>
         </div>
       </div>
-      <div style="background:#fff;border-radius:12px;padding:14px;box-shadow:0 1px 4px rgba(0,0,0,0.06);">
-        <div style="font-size:13px;font-weight:600;color:#D01148;margin-bottom:10px;text-transform:uppercase;letter-spacing:0.04em;">Próximos mantenimientos</div>
-        <div id="kpi-proximos">Cargando...</div>
+
+      <!-- Equipos sin inspección hoy -->
+      <div style="background:#fff;border-radius:12px;padding:14px;margin-bottom:8px;box-shadow:0 1px 4px rgba(0,0,0,0.06);">
+        <div style="font-size:12px;font-weight:700;color:#D01148;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:10px;">Equipos sin inspección hoy</div>
+        <div id="kpi-sin-inspeccion"><div class="loading-overlay" style="padding:1rem;"><div class="loading-spinner"></div></div></div>
       </div>
+
+      <!-- Top ítems en NO -->
+      <div style="background:#fff;border-radius:12px;padding:14px;margin-bottom:8px;box-shadow:0 1px 4px rgba(0,0,0,0.06);">
+        <div style="font-size:12px;font-weight:700;color:#D01148;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:10px;">Top ítems en NO — última semana</div>
+        <div id="kpi-top-nos"><div class="loading-overlay" style="padding:1rem;"><div class="loading-spinner"></div></div></div>
+      </div>
+
+      <!-- Próximos mantenimientos -->
+      <div style="background:#fff;border-radius:12px;padding:14px;margin-bottom:8px;box-shadow:0 1px 4px rgba(0,0,0,0.06);">
+        <div style="font-size:12px;font-weight:700;color:#D01148;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:10px;">Próximos mantenimientos</div>
+        <div id="kpi-proximos"><div class="loading-overlay" style="padding:1rem;"><div class="loading-spinner"></div></div></div>
+      </div>
+
+      <!-- Inspecciones por operario -->
+      <div style="background:#fff;border-radius:12px;padding:14px;margin-bottom:8px;box-shadow:0 1px 4px rgba(0,0,0,0.06);">
+        <div style="font-size:12px;font-weight:700;color:#D01148;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:10px;">Inspecciones por operario</div>
+        <div id="kpi-por-operario"><div class="loading-overlay" style="padding:1rem;"><div class="loading-spinner"></div></div></div>
+      </div>
+
     </div>
   </div>
 
