@@ -344,6 +344,7 @@ textarea{resize:none;font-family:inherit;}
         <div class="suc-p">Registro enviado a Google Sheets.</div>
         <div id="notas-alert" style="display:none;" class="alert-box"></div>
         <button class="btn-primary" id="btn-nueva" style="margin-top:1.5rem">Nueva inspección</button>
+      <button id="btn-volver-dashboard" style="display:none;width:100%;margin-top:8px;padding:11px;border-radius:10px;border:1px solid #D01148;background:transparent;color:#D01148;font-size:14px;font-weight:500;cursor:pointer;" onclick="volverDashboard()">← Volver al dashboard</button>
       </div>
     </div>
 
@@ -402,7 +403,7 @@ textarea{resize:none;font-family:inherit;}
 </div><!-- /app -->
 
 <script>
-var SHEET_URL = 'https://script.google.com/macros/s/AKfycbyFQllYA-1UFta98pdIkKKctdbE-6qNjrJRS6VCnxxwZ-ApT-XZSwiFJPbZYQoWhbf6GA/exec';
+var SHEET_URL = 'https://script.google.com/macros/s/AKfycbz8mwamVSDgSzIWYV3MUwpi0SFDpJA7bSePqXZVfedIFzwmTECLtjCowgqp3LZZcvwczA/exec';
 
 var MAQUINAS = [
   {id:'CON-1',emp:'CONTUBOS',tipo:'Montacargas Clamp',nota:'Nueva (pequeña)',esGato:false},
@@ -860,6 +861,11 @@ async function enviarInspeccion(){
   try {
     await fetch(SHEET_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
     showPage('page-5'); setProgress(100);
+    // Mostrar botón volver al dashboard si es jefe
+    var btnVolver = document.getElementById('btn-volver-dashboard');
+    if (btnVolver && usuarioActual && usuarioActual.rol === 'jefe_logistica') {
+      btnVolver.style.display = 'block';
+    }
     if(noItems.length>0){
       var a=document.getElementById('notas-alert');
       a.style.display='block';
@@ -1354,6 +1360,27 @@ function jefeLogout() {
   reiniciar();
 }
 
+function volverDashboard() {
+  document.getElementById('btn-volver-dashboard').style.display = 'none';
+  var shell = document.getElementById('app-shell');
+  shell.style.display = 'none';
+  document.querySelectorAll('.page').forEach(function(p){ p.classList.remove('active'); });
+  setProgress(0);
+  initJefe();
+}
+
+function jefeIrAChecklist() {
+  // Ir al checklist de montacargas manteniendo la sesión del jefe
+  document.getElementById('jefe-shell').style.display = 'none';
+  var shell = document.getElementById('app-shell');
+  shell.style.display = 'flex';
+  shell.style.flexDirection = 'column';
+  setupUserDisplay();
+  buildMaqGrid();
+  showPage('page-1');
+  setProgress(10);
+}
+
 </script>
 
 <div id="jefe-shell" class="jefe-shell">
@@ -1364,7 +1391,10 @@ function jefeLogout() {
       <img src="" id="jh-logo-t" alt="Tecnipapel"/>
     </div>
     <div class="jefe-header-title">Panel Jefe</div>
-    <button onclick="jefeLogout()" style="font-size:12px;color:#D01148;font-weight:500;border:none;background:transparent;cursor:pointer;">Salir ↩</button>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <button onclick="jefeIrAChecklist()" style="font-size:12px;color:#185FA5;font-weight:500;border:1px solid #185FA5;background:transparent;cursor:pointer;padding:4px 8px;border-radius:6px;">🚜 Checklist</button>
+      <button onclick="jefeLogout()" style="font-size:12px;color:#D01148;font-weight:500;border:none;background:transparent;cursor:pointer;">Salir ↩</button>
+    </div>
   </div>
   <div class="jefe-nav">
     <button class="jnav-btn active" onclick="switchJefePanel('flota',this)">🚜 Flota</button>
