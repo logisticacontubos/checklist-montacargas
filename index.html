@@ -297,7 +297,7 @@ textarea{resize:none;font-family:inherit;}
 </div><!-- /app -->
 
 <script>
-var SHEET_URL = 'https://script.google.com/macros/s/AKfycbyT7tgXsjpCp2cAG1CXB5zmrHf3HmqOEbSbTBc9_ivMHLFw6tGwNeHNC-K1aF-flO2xpw/exec';
+var SHEET_URL = 'https://script.google.com/macros/s/AKfycbyeK7tEI0Y__Q7Cig4AGalwvShHcDlvEPnppZVRy9ASpSw_ZyojShQeA__AOwtz90i9lA/exec';
 
 var MAQUINAS = [
   {id:'CON-1',emp:'CONTUBOS',tipo:'Montacargas Clamp',nota:'Nueva (pequeña)',esGato:false},
@@ -494,13 +494,23 @@ async function checkPin(){
 // ─── Usuarios ──────────────────────────────────────────
 async function loadUsuarios(){
   try {
-    var resp = await fetch(SHEET_URL, {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({action:'getUsuarios'})
+    var resp = await fetch(SHEET_URL + '?action=getUsuarios', {
+      method:'GET',
     });
     var data = await resp.json();
     if(data.status==='ok') usuarios = data.usuarios;
-  } catch(e){ console.error('Error cargando usuarios',e); }
+  } catch(e){ 
+    // Intentar con POST si GET falla
+    try {
+      var resp2 = await fetch(SHEET_URL, {
+        method:'POST',
+        headers:{'Content-Type':'text/plain'},
+        body: JSON.stringify({action:'getUsuarios'})
+      });
+      var data2 = await resp2.json();
+      if(data2.status==='ok') usuarios = data2.usuarios;
+    } catch(e2){ console.error('Error cargando usuarios',e2); }
+  }
 }
 
 function enterApp(){
