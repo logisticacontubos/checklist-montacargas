@@ -622,6 +622,10 @@ function enterApp(){
       '<div class="pb-h">Checklist Moto</div><div class="pb-p">'+usuarioActual.nombre+' · 17 ítems</div>';
     showPage('moto-1');
     setProgress(25);
+  } else if(usuarioActual.rol === 'jefe_logistica'){
+    shell.style.display='none';
+    document.getElementById('login-screen').style.display='none';
+    initJefe();
   } else {
     setupUserDisplay();
     buildMaqGrid();
