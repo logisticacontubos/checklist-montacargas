@@ -87,9 +87,9 @@ textarea{resize:none;font-family:inherit;}
 .item-lbl{font-size:13px;color:#1A1A1A;flex:1;line-height:1.4;}
 .item-std{font-size:11px;color:#AAA;margin-top:1px;}
 .si-no{display:flex;border-radius:7px;overflow:hidden;border:1px solid #E0DED8;flex-shrink:0;}
-.sn{padding:7px 13px;font-size:13px;font-weight:600;cursor:pointer;border:none;background:#FAFAF8;color:#CCC;transition:all 0.12s;}
-.sn.s-on{background:#EAF3DE;color:#27500A;}
-.sn.n-on{background:#FCEBEB;color:#C01010;}
+.sn{padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer;border:none;background:#F0EEE8;color:#BBB;transition:all 0.15s;}
+.sn.s-on{background:#27A846;color:#fff;}
+.sn.n-on{background:#D01148;color:#fff;}
 .sn:hover:not(.s-on):not(.n-on){background:#F0EEE8;color:#888;}
 
 /* BOTTOM BAR */
@@ -222,6 +222,12 @@ textarea{resize:none;font-family:inherit;}
 .loading-overlay{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:3rem;gap:12px;}
 .loading-spinner{width:36px;height:36px;border:3px solid #E0DED8;border-top-color:#D01148;border-radius:50%;animation:spin 0.8s linear infinite;}
 .loading-text{font-size:14px;color:#888;}
+
+.nav-bar{position:sticky;bottom:0;background:#fff;border-top:1px solid #E0DED8;padding:8px 1.25rem;display:flex;gap:8px;z-index:20;box-shadow:0 -1px 6px rgba(0,0,0,0.06);}
+.btn-back{flex:1;padding:11px;border-radius:10px;border:1px solid #E0DED8;background:transparent;color:#555;font-size:14px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;}
+.btn-back:hover{background:#F0EEE8;}
+.btn-exit{padding:11px 14px;border-radius:10px;border:1px solid #FFCDD2;background:#FFF5F7;color:#D01148;font-size:14px;font-weight:500;cursor:pointer;}
+.btn-exit:hover{background:#FFEBEE;}
 </style>
 </head>
 <body>
@@ -287,8 +293,9 @@ textarea{resize:none;font-family:inherit;}
           <input type="number" id="horometro" placeholder="Ej: 4800"/>
         </div>
       </div>
-      <div class="bottom-bar">
-        <button class="btn-primary" id="btn1" disabled>Iniciar inspección</button>
+      <div class="nav-bar">
+        <button class="btn-back" onclick="cerrarAppYSalir()">↩ Salir</button>
+        <button class="btn-primary" id="btn1" disabled style="flex:2;">Iniciar inspección</button>
       </div>
     </div>
 
@@ -297,9 +304,13 @@ textarea{resize:none;font-family:inherit;}
       <div style="margin:1rem 1rem 0;"><div id="banner2"></div></div>
       <div class="checklist-card" id="items-est"></div>
       <div style="height:5rem"></div>
-      <div class="bottom-bar">
-        <div class="counter" id="cnt-est">0 / 0 ítems marcados</div>
-        <button class="btn-primary" id="btn2" disabled>Continuar</button>
+      <div class="nav-bar">
+        <button class="btn-back" onclick="showPage('page-1');setProgress(10);">← Volver</button>
+        <div style="flex:2;display:flex;flex-direction:column;gap:4px;">
+          <div class="counter" id="cnt-est" style="text-align:right;">0 / 0 ítems marcados</div>
+          <button class="btn-primary" id="btn2" disabled>Continuar</button>
+        </div>
+        <button class="btn-exit" onclick="cerrarAppYSalir()">↩</button>
       </div>
     </div>
 
@@ -313,9 +324,13 @@ textarea{resize:none;font-family:inherit;}
       </div>
       <div class="checklist-card" id="items-din"></div>
       <div style="height:5rem"></div>
-      <div class="bottom-bar">
-        <div class="counter" id="cnt-din">0 / 9 ítems marcados</div>
-        <button class="btn-primary" id="btn3" disabled>Ver resumen</button>
+      <div class="nav-bar">
+        <button class="btn-back" onclick="showPage('page-2');setProgress(33);">← Volver</button>
+        <div style="flex:2;display:flex;flex-direction:column;gap:4px;">
+          <div class="counter" id="cnt-din" style="text-align:right;">0 / 9 ítems marcados</div>
+          <button class="btn-primary" id="btn3" disabled>Ver resumen</button>
+        </div>
+        <button class="btn-exit" onclick="cerrarAppYSalir()">↩</button>
       </div>
     </div>
 
@@ -330,9 +345,10 @@ textarea{resize:none;font-family:inherit;}
           <textarea id="observaciones" rows="3" placeholder="Novedades, comentarios adicionales..."></textarea>
         </div>
       </div>
-      <div class="bottom-bar">
-        <button class="btn-primary" id="btn4">Guardar en Sheets</button>
-        <button class="btn-secondary" id="btn4b">← Volver</button>
+      <div class="nav-bar">
+        <button class="btn-back" id="btn4b">← Volver</button>
+        <button class="btn-primary" id="btn4" style="flex:2;">Guardar en Sheets</button>
+        <button class="btn-exit" onclick="cerrarAppYSalir()">↩</button>
       </div>
     </div>
 
@@ -343,8 +359,9 @@ textarea{resize:none;font-family:inherit;}
         <div class="suc-h">¡Inspección guardada!</div>
         <div class="suc-p">Registro enviado a Google Sheets.</div>
         <div id="notas-alert" style="display:none;" class="alert-box"></div>
-        <button class="btn-primary" id="btn-nueva" style="margin-top:1.5rem">Nueva inspección</button>
-      <button id="btn-volver-dashboard" style="display:none;width:100%;margin-top:8px;padding:11px;border-radius:10px;border:1px solid #D01148;background:transparent;color:#D01148;font-size:14px;font-weight:500;cursor:pointer;" onclick="volverDashboard()">← Volver al dashboard</button>
+        <button class="btn-primary" id="btn-nueva" style="margin-top:1.5rem;width:100%;">Nueva inspección</button>
+        <button id="btn-volver-dashboard" style="display:none;width:100%;margin-top:8px;padding:11px;border-radius:10px;border:1px solid #D01148;background:transparent;color:#D01148;font-size:14px;font-weight:500;cursor:pointer;" onclick="volverDashboard()">← Volver al dashboard</button>
+        <button onclick="cerrarAppYSalir()" style="width:100%;margin-top:8px;padding:11px;border-radius:10px;border:1px solid #E0DED8;background:transparent;color:#888;font-size:13px;cursor:pointer;">↩ Cerrar sesión</button>
       </div>
     </div>
 
@@ -358,9 +375,12 @@ textarea{resize:none;font-family:inherit;}
       </div>
       <div class="checklist-card" id="items-moto"></div>
       <div style="height:5rem"></div>
-      <div class="bottom-bar">
-        <div class="counter" id="cnt-moto">0 / 17 ítems marcados</div>
-        <button class="btn-primary" id="btn-moto1" disabled>Ver resumen</button>
+      <div class="nav-bar">
+        <button class="btn-back" onclick="cerrarAppYSalir()">↩ Salir</button>
+        <div style="flex:2;display:flex;flex-direction:column;gap:4px;">
+          <div class="counter" id="cnt-moto" style="text-align:right;">0 / 17 ítems marcados</div>
+          <button class="btn-primary" id="btn-moto1" disabled>Ver resumen</button>
+        </div>
       </div>
     </div>
 
@@ -382,9 +402,10 @@ textarea{resize:none;font-family:inherit;}
           <textarea id="obs-moto" rows="3" placeholder="Novedades o comentarios..."></textarea>
         </div>
       </div>
-      <div class="bottom-bar">
-        <button class="btn-primary" id="btn-moto2">Guardar en Sheets</button>
-        <button class="btn-secondary" id="btn-moto2b">← Volver</button>
+      <div class="nav-bar">
+        <button class="btn-back" id="btn-moto2b">← Volver</button>
+        <button class="btn-primary" id="btn-moto2" style="flex:2;">Guardar en Sheets</button>
+        <button class="btn-exit" onclick="cerrarAppYSalir()">↩</button>
       </div>
     </div>
 
@@ -395,7 +416,8 @@ textarea{resize:none;font-family:inherit;}
         <div class="suc-h">¡Checklist guardado!</div>
         <div class="suc-p">Registro enviado a Google Sheets.</div>
         <div id="moto-notas-alert" style="display:none;" class="alert-box"></div>
-        <button class="btn-primary" id="btn-moto-nueva" style="margin-top:1.5rem">Nueva inspección</button>
+        <button class="btn-primary" id="btn-moto-nueva" style="margin-top:1.5rem;width:100%;">Nueva inspección</button>
+      <button onclick="cerrarAppYSalir()" style="width:100%;margin-top:8px;padding:11px;border-radius:10px;border:1px solid #E0DED8;background:transparent;color:#888;font-size:13px;cursor:pointer;">↩ Cerrar sesión</button>
       </div>
     </div>
 
