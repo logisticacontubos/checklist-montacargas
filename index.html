@@ -447,7 +447,7 @@ textarea{resize:none;font-family:inherit;}
 </div><!-- /app -->
 
 <script>
-var SHEET_URL = 'https://script.google.com/macros/s/AKfycbz8mwamVSDgSzIWYV3MUwpi0SFDpJA7bSePqXZVfedIFzwmTECLtjCowgqp3LZZcvwczA/exec';
+var SHEET_URL = 'https://script.google.com/macros/s/AKfycbyZ4xkkOch0WSIFOeATzr_wiucoWwa9udm4f0h3sD0KrY0TQgb9I68e90APIczb6rTrzA/exec';
 
 var MAQUINAS = [
   {id:'CON-1',emp:'CONTUBOS',tipo:'Montacargas Clamp',nota:'Nueva (pequeña)',esGato:false},
@@ -1022,14 +1022,22 @@ async function initJefe() {
 
 async function cargarFlota() {
   try {
-    var resp = await fetch(SHEET_URL + '?action=getFlota');
+    // Usar POST igual que el resto de llamadas que funcionan
+    var resp = await fetch(SHEET_URL, {
+      method: 'POST',
+      headers: {'Content-Type': 'text/plain'},
+      body: JSON.stringify({action: 'getFlota'})
+    });
     var data = await resp.json();
     if (data.status === 'ok') {
       flotaData = data.flota;
       renderFlota();
       updateFlotaSub();
+    } else {
+      throw new Error(data.message || 'Error en respuesta');
     }
   } catch(e) {
+    console.error('Error cargando flota:', e);
     document.getElementById('equipo-list').innerHTML = '<div style="padding:20px;text-align:center;color:#AAA;font-size:13px;">Error cargando flota. Verifica la conexión.</div>';
   }
 }
@@ -1335,7 +1343,11 @@ async function renderKPIs() {
 
   // KPIs del Sheet (inspecciones reales)
   try {
-    var resp = await fetch(SHEET_URL + '?action=getKPIs');
+    var resp = await fetch(SHEET_URL, {
+      method: 'POST',
+      headers: {'Content-Type': 'text/plain'},
+      body: JSON.stringify({action: 'getKPIs'})
+    });
     var data = await resp.json();
     if (data.status === 'ok') {
       var k = data.kpis;
