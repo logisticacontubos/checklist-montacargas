@@ -961,6 +961,12 @@ async function enviarMoto(){
   }
 }
 
+function cerrarAppYSalir(){
+  if(confirm('¿Deseas salir? El progreso no guardado se perderá.')){
+    reiniciar();
+  }
+}
+
 function reiniciar(){
   usuarioActual=null; maqSel=null; esGato=false;
   respEst={}; respDin={};
@@ -971,9 +977,13 @@ function reiniciar(){
   document.getElementById('btn4').disabled=false;
   document.getElementById('btn1').disabled=true;
   document.querySelectorAll('.maq-btn').forEach(function(b){b.classList.remove('selected');});
+  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
   pinActual=''; updateDots();
   document.getElementById('pin-error').textContent='';
+  // Ocultar todo
   document.getElementById('app-shell').style.display='none';
+  var jefeShell = document.getElementById('jefe-shell');
+  if(jefeShell) jefeShell.style.display='none';
   document.getElementById('login-screen').style.display='flex';
   setProgress(0);
 }
@@ -1409,8 +1419,9 @@ function switchJefePanel(panel, btn) {
 }
 
 function jefeLogout() {
-  document.getElementById('jefe-shell').style.display = 'none';
-  reiniciar();
+  if(confirm('¿Deseas cerrar sesión?')){
+    reiniciar();
+  }
 }
 
 function volverDashboard() {
@@ -1446,7 +1457,7 @@ function jefeIrAChecklist() {
     <div class="jefe-header-title">Panel Jefe</div>
     <div style="display:flex;gap:8px;align-items:center;">
       <button onclick="jefeIrAChecklist()" style="font-size:12px;color:#185FA5;font-weight:500;border:1px solid #185FA5;background:transparent;cursor:pointer;padding:4px 8px;border-radius:6px;">🚜 Checklist</button>
-      <button onclick="jefeLogout()" style="font-size:12px;color:#D01148;font-weight:500;border:none;background:transparent;cursor:pointer;">Salir ↩</button>
+      <button onclick="jefeLogout()" style="font-size:12px;color:#D01148;font-weight:500;border:1px solid #FFCDD2;background:#FFF5F7;padding:4px 10px;border-radius:6px;cursor:pointer;">↩ Salir</button>
     </div>
   </div>
   <div class="jefe-nav">
