@@ -277,7 +277,7 @@ textarea{resize:none;font-family:inherit;}
       <div class="step-nav">
         <button class="step-nav-btn step-nav-exit" onclick="cerrarAppYSalir()">↩ Salir</button>
         <span class="step-nav-title">Identificación</span>
-        <span style="width:52px;"></span>
+        <button id="btn-volver-dash-p1" class="step-nav-btn step-nav-back" style="display:none;" onclick="volverDashboard()">Panel ›</button>
       </div>
       <div class="card">
         <div class="card-title">Identificación</div>
@@ -914,11 +914,12 @@ async function enviarInspeccion(){
   try {
     await fetch(SHEET_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
     showPage('page-5'); setProgress(100);
-    // Mostrar botón volver al dashboard si es jefe
     var btnVolver = document.getElementById('btn-volver-dashboard');
     if (btnVolver && usuarioActual && usuarioActual.rol === 'jefe_logistica') {
       btnVolver.style.display = 'block';
     }
+    var btnP1 = document.getElementById('btn-volver-dash-p1');
+    if(btnP1) btnP1.style.display = 'none';
     if(noItems.length>0){
       var a=document.getElementById('notas-alert');
       a.style.display='block';
@@ -1097,7 +1098,11 @@ function renderFlota() {
 
 async function abrirDetalle(equipoId) {
   equipoActual = flotaData.find(function(e){ return e.id === equipoId; });
-  if (!equipoActual) return;
+  if (!equipoActual) {
+    await cargarFlota();
+    equipoActual = flotaData.find(function(e){ return e.id === equipoId; });
+    if (!equipoActual) return;
+  }
 
   document.getElementById('equipo-list').parentElement.style.display = 'none';
   document.querySelector('.flota-tabs').style.display = 'none';
@@ -1425,16 +1430,20 @@ function jefeLogout() {
 }
 
 function volverDashboard() {
-  document.getElementById('btn-volver-dashboard').style.display = 'none';
+  // Ocultar app-shell y páginas
   var shell = document.getElementById('app-shell');
-  shell.style.display = 'none';
+  if(shell) shell.style.display = 'none';
   document.querySelectorAll('.page').forEach(function(p){ p.classList.remove('active'); });
+  // Ocultar botón volver dashboard
+  var btn = document.getElementById('btn-volver-dashboard');
+  if(btn) btn.style.display = 'none';
+  var btnP1 = document.getElementById('btn-volver-dash-p1');
+  if(btnP1) btnP1.style.display = 'none';
   setProgress(0);
   initJefe();
 }
 
 function jefeIrAChecklist() {
-  // Ir al checklist de montacargas manteniendo la sesión del jefe
   document.getElementById('jefe-shell').style.display = 'none';
   var shell = document.getElementById('app-shell');
   shell.style.display = 'flex';
@@ -1443,6 +1452,9 @@ function jefeIrAChecklist() {
   buildMaqGrid();
   showPage('page-1');
   setProgress(10);
+  // Mostrar botón volver al dashboard en paso 1
+  var btnVD = document.getElementById('btn-volver-dash-p1');
+  if(btnVD) btnVD.style.display = 'block';
 }
 
 </script>
