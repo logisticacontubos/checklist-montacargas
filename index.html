@@ -135,8 +135,13 @@ textarea{resize:none;font-family:inherit;}
 .panel-nav{background:#fff;border-bottom:1px solid #E0DED8;display:flex;position:sticky;top:53px;z-index:9;}
 .panel-tab{flex:1;padding:10px 4px;font-size:12px;font-weight:500;color:#888;border:none;background:transparent;cursor:pointer;border-bottom:2px solid transparent;text-align:center;}
 .panel-tab.active{color:#D01148;border-bottom-color:#D01148;}
-.panel-content{display:none;padding:0.75rem;}
-.panel-content.active{display:block;}
+.panel-content{padding:0.75rem;}
+.jpanel-item{display:none;}
+.jpanel-item.active{display:block;}
+.mecpanel-item{display:none;}
+.mecpanel-item.active{display:block;}
+.mjpanel-item{display:none;}
+.mjpanel-item.active{display:block;}
 
 /* ── FLOTA ── */
 .flota-tabs{display:flex;gap:6px;padding:10px 1.25rem;background:#fff;border-bottom:1px solid #E0DED8;overflow-x:auto;}
@@ -483,7 +488,7 @@ textarea{resize:none;font-family:inherit;}
   </div>
 
   <!-- FLOTA -->
-  <div id="jpanel-flota" class="panel-content active">
+  <div id="jpanel-flota" class="jpanel-item active">
     <div style="background:#fff;padding:12px 1.25rem;border-bottom:1px solid #E0DED8;display:flex;align-items:center;justify-content:space-between;">
       <div><div style="font-size:15px;font-weight:600;" id="flota-title">Flota de equipos</div><div style="font-size:11px;color:#888;margin-top:1px;" id="flota-sub">Cargando...</div></div>
     </div>
@@ -522,7 +527,7 @@ textarea{resize:none;font-family:inherit;}
   </div>
 
   <!-- KPIs -->
-  <div id="jpanel-kpis" class="panel-content">
+  <div id="jpanel-kpis" class="jpanel-item">
     <div style="padding:0.75rem;">
       <div class="kpi-card">
         <div class="kpi-section-title">Inspecciones de hoy <span style="font-size:11px;color:#AAA;font-weight:400;" id="kpi-fecha-hoy"></span></div>
@@ -541,23 +546,23 @@ textarea{resize:none;font-family:inherit;}
   </div>
 
   <!-- ALERTAS -->
-  <div id="jpanel-alertas" class="panel-content">
+  <div id="jpanel-alertas" class="jpanel-item">
     <div style="padding:0.75rem;">
       <div class="kpi-card"><div class="kpi-section-title">Alertas activas</div><div id="alertas-list">Cargando...</div></div>
     </div>
   </div>
 
   <!-- MECÁNICA (jefe) -->
-  <div id="jpanel-mecanica" class="panel-content">
+  <div id="jpanel-mecanica" class="jpanel-item">
     <div class="panel-nav" style="position:sticky;top:110px;z-index:8;background:#fff;border-bottom:1px solid #E0DED8;">
       <button class="panel-tab active" onclick="switchMecJefeTab('pendientes',this)" id="mj-tab-pend">🔔 Pendientes</button>
       <button class="panel-tab" onclick="switchMecJefeTab('registrar',this)" id="mj-tab-reg">📋 Registrar</button>
       <button class="panel-tab" onclick="switchMecJefeTab('historial',this)" id="mj-tab-hist">📁 Historial</button>
     </div>
-    <div id="mj-panel-pendientes" class="panel-content active" style="padding:0.75rem;">
+    <div id="mj-panel-pendientes" class="mjpanel-item active" style="padding:0.75rem;">
       <div id="mj-alertas-list"><div class="loading-overlay"><div class="loading-spinner"></div><div class="loading-text">Cargando...</div></div></div>
     </div>
-    <div id="mj-panel-registrar" class="panel-content" style="padding:0.75rem;">
+    <div id="mj-panel-registrar" class="mjpanel-item" style="padding:0.75rem;">
       <div class="kpi-card">
         <div class="form-field"><label class="form-label">Equipo *</label><select class="form-select" id="mj-ev-equipo"></select></div>
         <div class="form-grid">
@@ -579,7 +584,7 @@ textarea{resize:none;font-family:inherit;}
         <button onclick="mjGuardarEvento()" style="width:100%;padding:12px;border-radius:10px;border:none;background:#D01148;color:#fff;font-size:15px;font-weight:600;cursor:pointer;" id="mj-btn-guardar">Guardar registro</button>
       </div>
     </div>
-    <div id="mj-panel-historial" class="panel-content" style="padding:0.75rem;">
+    <div id="mj-panel-historial" class="mjpanel-item" style="padding:0.75rem;">
       <div id="mj-historial-list"><div class="loading-overlay"><div class="loading-spinner"></div><div class="loading-text">Cargando...</div></div></div>
     </div>
   </div>
@@ -603,7 +608,7 @@ textarea{resize:none;font-family:inherit;}
   </div>
 
   <!-- PENDIENTES -->
-  <div id="mec-panel-pendientes" class="panel-content active">
+  <div id="mec-panel-pendientes" class="mecpanel-item active">
     <div style="padding:0.75rem;">
       <div class="mec-welcome">
         <div class="mec-welcome-name" id="mec-nombre"></div>
@@ -619,7 +624,7 @@ textarea{resize:none;font-family:inherit;}
   </div>
 
   <!-- REGISTRAR -->
-  <div id="mec-panel-registrar" class="panel-content">
+  <div id="mec-panel-registrar" class="mecpanel-item">
     <div style="padding:0.75rem;">
       <div class="kpi-card">
         <div class="form-field"><label class="form-label">Equipo *</label><select class="form-select" id="mec-ev-equipo"></select></div>
@@ -645,7 +650,7 @@ textarea{resize:none;font-family:inherit;}
   </div>
 
   <!-- HISTORIAL -->
-  <div id="mec-panel-historial" class="panel-content">
+  <div id="mec-panel-historial" class="mecpanel-item">
     <div style="padding:0.75rem;" id="mec-historial-list">
       <div class="loading-overlay"><div class="loading-spinner"></div><div class="loading-text">Cargando...</div></div>
     </div>
@@ -1385,8 +1390,8 @@ function switchJefePanel(panel,btn){
   if(detShell && detShell.classList.contains('active')) {
     cerrarDetalle();
   }
-  document.querySelectorAll('.panel-content').forEach(function(p){if(p.id.startsWith('jpanel')) p.classList.remove('active');});
-  document.querySelectorAll('#jefe-shell .panel-tab').forEach(function(b){b.classList.remove('active');});
+  document.querySelectorAll('.jpanel-item').forEach(function(p){p.classList.remove('active');});
+  document.querySelectorAll('#jefe-shell > .panel-nav .panel-tab').forEach(function(b){b.classList.remove('active');});
   document.getElementById('jpanel-'+panel).classList.add('active');
   if(btn) btn.classList.add('active');
   if(panel==='kpis') renderKPIs();
@@ -1506,8 +1511,8 @@ async function mecGuardarEvento(){
 }
 
 function switchMecPanel(panel,btn){
-  document.querySelectorAll('#mec-shell .panel-content').forEach(function(p){p.classList.remove('active');});
-  document.querySelectorAll('#mec-shell .panel-tab').forEach(function(b){b.classList.remove('active');});
+  document.querySelectorAll('.mecpanel-item').forEach(function(p){p.classList.remove('active');});
+  document.querySelectorAll('#mec-shell > .panel-nav .panel-tab').forEach(function(b){b.classList.remove('active');});
   document.getElementById('mec-panel-'+panel).classList.add('active');
   if(btn) btn.classList.add('active');
   if(panel==='historial') mecCargarHistorial();
@@ -1558,10 +1563,7 @@ function mjIrARegistrar(equipoId){
 }
 
 function switchMecJefeTab(panel, btn){
-  ['pendientes','registrar','historial'].forEach(function(p){
-    var el = document.getElementById('mj-panel-'+p);
-    if(el) el.classList.remove('active');
-  });
+  document.querySelectorAll('.mjpanel-item').forEach(function(p){p.classList.remove('active');});
   ['pend','reg','hist'].forEach(function(t){
     var el = document.getElementById('mj-tab-'+t);
     if(el) el.classList.remove('active');
