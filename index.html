@@ -1168,7 +1168,7 @@ function renderFlota(){
     var estadoL=sem==='rojo'?'Requiere atención urgente':sem==='amarillo'?'Requiere atención':'Operativo';
     var estadoC=sem==='rojo'?'eb-rojo':sem==='amarillo'?'eb-alerta':'eb-op';
     var horo=parseFloat(e.horometro_actual)||0;
-    return '<div class="eq-card '+sem+'" onclick="abrirDetalle(''+e.id+'')"><div class="eq-top"><div class="eq-id-big">'+e.id+'</div><span class="eq-badge-emp '+empC+'">'+e.empresa+'</span><div class="semaforo-dot sd-'+sem+'" style="margin-left:auto;"></div></div><div class="eq-desc-small">'+e.tipo+' · '+e.descripcion+'</div><div class="eq-stats-grid"><div class="eq-stat"><div class="eq-stat-lbl">Horómetro</div><div class="eq-stat-val">'+horo.toLocaleString()+' h</div></div><div class="eq-stat"><div class="eq-stat-lbl">Próx. mant.</div><div class="eq-stat-val '+horasClass+'">'+horasText+'</div></div><div class="eq-stat"><div class="eq-stat-lbl">SOAT</div><div class="eq-stat-val '+soatClass+'">'+soatText+'</div></div></div><div class="eq-footer-row"><span class="eq-estado-badge '+estadoC+'">'+estadoL+'</span><span style="color:#D01148;font-size:16px;">›</span></div></div>';
+    return '<div class="eq-card '+sem+'" onclick="abrirDetalle(\'' + e.id + '\')"><div class="eq-top"><div class="eq-id-big">'+e.id+'</div><span class="eq-badge-emp '+empC+'">'+e.empresa+'</span><div class="semaforo-dot sd-'+sem+'" style="margin-left:auto;"></div></div><div class="eq-desc-small">'+e.tipo+' · '+e.descripcion+'</div><div class="eq-stats-grid"><div class="eq-stat"><div class="eq-stat-lbl">Horómetro</div><div class="eq-stat-val">'+horo.toLocaleString()+' h</div></div><div class="eq-stat"><div class="eq-stat-lbl">Próx. mant.</div><div class="eq-stat-val '+horasClass+'">'+horasText+'</div></div><div class="eq-stat"><div class="eq-stat-lbl">SOAT</div><div class="eq-stat-val '+soatClass+'">'+soatText+'</div></div></div><div class="eq-footer-row"><span class="eq-estado-badge '+estadoC+'">'+estadoL+'</span><span style="color:#D01148;font-size:16px;">›</span></div></div>';
   }).join('');
 }
 
@@ -1446,7 +1446,7 @@ function mecRenderAlertas(){
     var esRojo=e.semaforo==='rojo';
     var h=Math.round(e.horas_restantes||0);
     var horasText=h<0?'Superó intervalo en '+Math.abs(h)+' h':'Faltan '+h+' h';
-    return '<div class="mec-alerta'+(esRojo?'':' warn')+'"><div class="mec-alerta-top"><span class="mec-alerta-id">'+e.id+'</span><span class="mec-alerta-badge '+(esRojo?'mab-rojo':'mab-amarillo')+'">'+(esRojo?'VENCIDO':'PRÓXIMO')+'</span></div><div class="mec-alerta-desc">'+e.tipo+' · '+e.descripcion+'</div><div class="mec-alerta-footer"><span class="mec-alerta-horas'+(esRojo?'':' warn')+'">'+horasText+'</span><button class="btn-reg-alerta'+(esRojo?'':' warn')+'" onclick="mecIrARegistrar(''+e.id+'')">+ Registrar</button></div></div>';
+    return '<div class="mec-alerta'+(esRojo?'':' warn')+'"><div class="mec-alerta-top"><span class="mec-alerta-id">'+e.id+'</span><span class="mec-alerta-badge '+(esRojo?'mab-rojo':'mab-amarillo')+'">'+(esRojo?'VENCIDO':'PRÓXIMO')+'</span></div><div class="mec-alerta-desc">'+e.tipo+' · '+e.descripcion+'</div><div class="mec-alerta-footer"><span class="mec-alerta-horas'+(esRojo?'':' warn')+'">'+horasText+'</span><button class="btn-reg-alerta'+(esRojo?'':' warn')+'" onclick="mecIrARegistrar(\'+e.id+\')">+ Registrar</button></div></div>';
   }).join('');
 }
 
@@ -1547,7 +1547,7 @@ function mjRenderAlertas(){
       +'<span class="mec-alerta-badge '+(esRojo?'mab-rojo':'mab-amarillo')+'">'+(esRojo?'VENCIDO':'PRÓXIMO')+'</span></div>'
       +'<div class="mec-alerta-desc">'+e.tipo+' · '+e.descripcion+'</div>'
       +'<div class="mec-alerta-footer"><span class="mec-alerta-horas'+(esRojo?'':' warn')+'">'+horasText+'</span>'
-      +'<button class="btn-reg-alerta'+(esRojo?'':' warn')+'" onclick="mjIrARegistrar(''+e.id+'')">+ Registrar</button></div></div>';
+      +'<button class="btn-reg-alerta'+(esRojo?'':' warn')+'" onclick="mjIrARegistrar(\'+e.id+\')">+ Registrar</button></div></div>';
   }).join('');
 }
 
