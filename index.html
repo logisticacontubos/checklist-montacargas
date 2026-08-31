@@ -447,7 +447,7 @@ textarea{resize:none;font-family:inherit;}
 </div><!-- /app -->
 
 <script>
-var SHEET_URL = 'https://script.google.com/macros/s/AKfycbyZ4xkkOch0WSIFOeATzr_wiucoWwa9udm4f0h3sD0KrY0TQgb9I68e90APIczb6rTrzA/exec';
+var SHEET_URL = 'https://script.google.com/macros/s/AKfycbxbMAdaOFI4NiW0QAVlu-traVUqxgfzDjKN0UsJtXli9CnMSL-wA4yrzXA2nHH8xmfb5Q/exec';
 
 var MAQUINAS = [
   {id:'CON-1',emp:'CONTUBOS',tipo:'Montacargas Clamp',nota:'Nueva (pequeña)',esGato:false},
@@ -1224,6 +1224,71 @@ function abrirFormEvento() {
 function cerrarFormEvento() {
   document.getElementById('form-evento').classList.remove('open');
   document.getElementById('overlay-evento').classList.remove('open');
+  document.getElementById('ev-fotos').value = '';
+  document.getElementById('fotos-preview').innerHTML = '';
+  document.getElementById('fotos-status').textContent = '';
+}
+
+function previewFotos(input) {
+  var preview = document.getElementById('fotos-preview');
+  preview.innerHTML = '';
+  var files = Array.from(input.files);
+  files.forEach(function(file, i) {
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      var img = document.createElement('img');
+      img.src = e.target.result;
+      img.style.cssText = 'width:70px;height:70px;object-fit:cover;border-radius:6px;border:1px solid #E0DED8;';
+      preview.appendChild(img);
+    };
+    reader.readAsDataURL(file);
+  });
+  document.getElementById('fotos-status').textContent = files.length + ' foto(s) seleccionada(s)';
+}
+
+async function subirFotos(equipoId, fecha, tipo) {
+  var input = document.getElementById('ev-fotos');
+  var files = Array.from(input.files);
+  if (files.length === 0) return [];
+
+  var urls = [];
+  document.getElementById('fotos-status').textContent = 'Subiendo fotos...';
+
+  for (var i = 0; i < files.length; i++) {
+    var file = files[i];
+    var base64 = await new Promise(function(resolve) {
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        // Quitar el prefijo data:image/jpeg;base64,
+        resolve(e.target.result.split(',')[1]);
+      };
+      reader.readAsDataURL(file);
+    });
+
+    try {
+      var resp = await fetch(SHEET_URL, {
+        method: 'POST',
+        headers: {'Content-Type': 'text/plain'},
+        body: JSON.stringify({
+          action: 'uploadFoto',
+          equipo_id: equipoId,
+          fecha: fecha,
+          tipo: tipo,
+          foto_base64: base64,
+          mime_type: file.type
+        })
+      });
+      var data = await resp.json();
+      if (data.status === 'ok') {
+        urls.push(data.url);
+        document.getElementById('fotos-status').textContent = (i+1) + ' de ' + files.length + ' fotos subidas...';
+      }
+    } catch(e) {
+      console.error('Error subiendo foto:', e);
+    }
+  }
+  document.getElementById('fotos-status').textContent = urls.length + ' foto(s) guardada(s) en Drive';
+  return urls;
 }
 
 async function guardarEvento() {
@@ -1234,18 +1299,24 @@ async function guardarEvento() {
 
   btn.textContent = 'Guardando...'; btn.disabled = true;
 
+  // Subir fotos primero
+  var equipoId = document.getElementById('ev-equipo').value;
+  var tipo = document.getElementById('ev-tipo').value;
+  var fotoUrls = await subirFotos(equipoId, fecha, tipo);
+
   var payload = {
     action: 'saveEvento',
-    equipo_id:    document.getElementById('ev-equipo').value,
+    equipo_id:    equipoId,
     fecha:        fecha,
     horometro:    document.getElementById('ev-horometro').value,
-    tipo:         document.getElementById('ev-tipo').value,
+    tipo:         tipo,
     descripcion:  desc,
     proveedor:    document.getElementById('ev-proveedor').value,
     costo:        parseFloat(document.getElementById('ev-costo').value) || 0,
     prox_fecha:   document.getElementById('ev-prox-fecha').value,
     observaciones:document.getElementById('ev-obs').value,
     registrado_por: usuarioActual ? usuarioActual.nombre : '',
+    fotos: fotoUrls.join(' | '),
   };
 
   try {
@@ -1656,6 +1727,16 @@ function jefeIrAChecklist() {
   <div class="form-field">
     <div class="form-label">Observaciones</div>
     <textarea class="form-textarea" id="ev-obs" rows="2" placeholder="Observaciones adicionales..."></textarea>
+  </div>
+  <!-- Fotos -->
+  <div class="form-field">
+    <div class="form-label">Fotos del mantenimiento (opcional)</div>
+    <input type="file" id="ev-fotos" accept="image/*" multiple style="display:none;" onchange="previewFotos(this)"/>
+    <button type="button" onclick="document.getElementById('ev-fotos').click()" style="width:100%;padding:10px;border-radius:8px;border:1.5px dashed #D01148;background:#FFF5F7;color:#D01148;font-size:13px;font-weight:500;cursor:pointer;">
+      📷 Agregar fotos
+    </button>
+    <div id="fotos-preview" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;"></div>
+    <div id="fotos-status" style="font-size:11px;color:#888;margin-top:4px;"></div>
   </div>
   <button onclick="guardarEvento()" style="width:100%;padding:12px;border-radius:10px;border:none;background:#D01148;color:#fff;font-size:15px;font-weight:600;cursor:pointer;margin-top:4px;" id="btn-guardar-evento">Guardar evento</button>
   <button onclick="cerrarFormEvento()" style="width:100%;padding:11px;border-radius:10px;border:1px solid #E0DED8;background:transparent;color:#555;font-size:14px;cursor:pointer;margin-top:6px;">Cancelar</button>
