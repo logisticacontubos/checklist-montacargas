@@ -127,7 +127,7 @@ textarea{resize:none;font-family:inherit;}
 .loading-text{font-size:14px;color:#888;}
 
 /* ── SHELL PANELS (jefe y mecánico) ── */
-.panel-shell{display:none;flex-direction:column;position:fixed;inset:0;background:#F0EEE8;z-index:50;overflow-y:auto;}
+.panel-shell{display:none;flex-direction:column;position:fixed;inset:0;background:#F0EEE8;z-index:50;overflow-y:hidden;}
 .panel-header{background:#fff;border-bottom:1px solid #E0DED8;padding:10px 1.25rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10;box-shadow:0 1px 4px rgba(0,0,0,0.06);}
 .panel-header-logos{display:flex;align-items:center;gap:10px;}
 .panel-header-logos img{height:22px;object-fit:contain;}
@@ -137,11 +137,11 @@ textarea{resize:none;font-family:inherit;}
 .panel-tab.active{color:#D01148;border-bottom-color:#D01148;}
 .panel-content{padding:0.75rem;}
 .jpanel-item{display:none;}
-.jpanel-item.active{display:block;}
+.jpanel-item.active{display:block;width:100%;min-height:calc(100vh - 110px);overflow-y:auto;}
 .mecpanel-item{display:none;}
-.mecpanel-item.active{display:block;}
+.mecpanel-item.active{display:block;width:100%;min-height:calc(100vh - 110px);overflow-y:auto;}
 .mjpanel-item{display:none;}
-.mjpanel-item.active{display:block;}
+.mjpanel-item.active{display:block;width:100%;}
 
 /* ── FLOTA ── */
 .flota-tabs{display:flex;gap:6px;padding:10px 1.25rem;background:#fff;border-bottom:1px solid #E0DED8;overflow-x:auto;}
