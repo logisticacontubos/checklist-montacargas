@@ -127,19 +127,19 @@ textarea{resize:none;font-family:inherit;}
 .loading-text{font-size:14px;color:#888;}
 
 /* ── SHELL PANELS (jefe y mecánico) ── */
-.panel-shell{display:none;flex-direction:column;position:fixed;inset:0;background:#F0EEE8;z-index:50;overflow-y:hidden;}
-.panel-header{background:#fff;border-bottom:1px solid #E0DED8;padding:10px 1.25rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10;box-shadow:0 1px 4px rgba(0,0,0,0.06);}
+.panel-shell{display:none;flex-direction:column;position:fixed;inset:0;background:#F0EEE8;z-index:50;overflow-y:auto;}
+.panel-header{background:#fff;border-bottom:1px solid #E0DED8;padding:10px 1.25rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10;box-shadow:0 1px 4px rgba(0,0,0,0.06);min-height:53px;}
 .panel-header-logos{display:flex;align-items:center;gap:10px;}
 .panel-header-logos img{height:22px;object-fit:contain;}
 .panel-header-title{font-size:13px;font-weight:600;color:#1A1A1A;text-align:center;flex:1;}
-.panel-nav{background:#fff;border-bottom:1px solid #E0DED8;display:flex;position:sticky;top:53px;z-index:9;}
+.panel-nav{background:#fff;border-bottom:1px solid #E0DED8;display:flex;position:sticky;top:53px;z-index:9;min-height:42px;}
 .panel-tab{flex:1;padding:10px 4px;font-size:12px;font-weight:500;color:#888;border:none;background:transparent;cursor:pointer;border-bottom:2px solid transparent;text-align:center;}
 .panel-tab.active{color:#D01148;border-bottom-color:#D01148;}
 .panel-content{padding:0.75rem;}
 .jpanel-item{display:none;}
-.jpanel-item.active{display:block;width:100%;min-height:calc(100vh - 110px);overflow-y:auto;}
+.jpanel-item.active{display:block;width:100%;}
 .mecpanel-item{display:none;}
-.mecpanel-item.active{display:block;width:100%;min-height:calc(100vh - 110px);overflow-y:auto;}
+.mecpanel-item.active{display:block;width:100%;}
 .mjpanel-item{display:none;}
 .mjpanel-item.active{display:block;width:100%;}
 
