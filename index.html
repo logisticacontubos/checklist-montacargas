@@ -767,7 +767,7 @@ textarea{resize:none;font-family:inherit;}
 </div><!-- /app -->
 
 <script>
-var SHEET_URL = 'https://script.google.com/macros/s/AKfycbyghQO5wj7ZOxBqPvIfbDuKO1uAILo80ltUoq2ggy-8qVIw0166GuqdIuL8_dn48D5UnA/exec';
+var SHEET_URL = 'https://script.google.com/macros/s/AKfycbxqLjgAQbgB9DLKhwT8nWVAVe8JsG-mcPyLegyJezxVbAOmSdTf1Olqc4mMYkUywGQH3Q/exec';
 
 // ═══════════════════════════════════════════════════════
 // DATOS ESTÁTICOS
@@ -1476,11 +1476,18 @@ function jefeLogout(){if(confirm('¿Deseas cerrar sesión?')) reiniciar();}
 function formatearFecha(fechaStr){
   if(!fechaStr) return '';
   try {
-    // Si es ISO (contiene T), convertir
-    if(String(fechaStr).includes('T')){
-      var d = new Date(fechaStr);
-      return d.toLocaleDateString('es-CO',{day:'2-digit',month:'2-digit',year:'numeric'}) + ' ' +
-             d.toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});
+    var s = String(fechaStr);
+    // Si es ISO (contiene T y Z), ajustar a Colombia UTC-5
+    if(s.includes('T')){
+      var d = new Date(s);
+      // Ajustar manualmente a UTC-5
+      var co = new Date(d.getTime() - (5 * 60 * 60 * 1000));
+      var dd = String(co.getUTCDate()).padStart(2,'0');
+      var mm = String(co.getUTCMonth()+1).padStart(2,'0');
+      var yyyy = co.getUTCFullYear();
+      var hh = String(co.getUTCHours()).padStart(2,'0');
+      var min = String(co.getUTCMinutes()).padStart(2,'0');
+      return dd+'/'+mm+'/'+yyyy+' '+hh+':'+min;
     }
     return fechaStr;
   } catch(e){ return fechaStr; }
