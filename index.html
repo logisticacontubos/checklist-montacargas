@@ -303,7 +303,10 @@ textarea{resize:none;font-family:inherit;}
     </div>
     <h1>Montacargas</h1>
     <div class="header-sub">Inspección Preoperacional</div>
-    <div class="progress-bar"><div class="progress-fill" id="progress" style="width:0%"></div></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-top:4px;">
+      <div class="progress-bar" style="flex:1;margin:0;"><div class="progress-fill" id="progress" style="width:0%"></div></div>
+      <button onclick="appActualizar()" style="font-size:11px;color:#888;border:none;background:transparent;padding:2px 6px;cursor:pointer;margin-left:8px;" id="btn-actualizar-app">🔄</button>
+    </div>
   </div>
 
   <!-- Paso 1: Máquina -->
@@ -477,6 +480,7 @@ textarea{resize:none;font-family:inherit;}
     <div class="panel-header-title">Panel Jefe</div>
     <div style="display:flex;gap:6px;">
       <button onclick="jefeIrAChecklist()" style="font-size:11px;color:#185FA5;font-weight:500;border:1px solid #185FA5;background:transparent;padding:4px 8px;border-radius:6px;cursor:pointer;">🚜</button>
+      <button onclick="jefeActualizar()" style="font-size:11px;color:#555;font-weight:500;border:1px solid #E0DED8;background:#FAFAF8;padding:4px 8px;border-radius:6px;cursor:pointer;" id="btn-actualizar-jefe">🔄</button>
       <button onclick="jefeLogout()" style="font-size:11px;color:#D01148;font-weight:500;border:1px solid #FFCDD2;background:#FFF5F7;padding:4px 10px;border-radius:6px;cursor:pointer;">↩ Salir</button>
     </div>
   </div>
@@ -600,7 +604,10 @@ textarea{resize:none;font-family:inherit;}
       <img id="mec-logo-t" alt="Tecnipapel"/>
     </div>
     <div class="panel-header-title">Panel Mecánico</div>
-    <button onclick="mecLogout()" style="font-size:11px;color:#D01148;font-weight:500;border:1px solid #FFCDD2;background:#FFF5F7;padding:4px 10px;border-radius:6px;cursor:pointer;">↩ Salir</button>
+    <div style="display:flex;gap:6px;">
+      <button onclick="mecActualizar()" style="font-size:11px;color:#555;font-weight:500;border:1px solid #E0DED8;background:#FAFAF8;padding:4px 8px;border-radius:6px;cursor:pointer;" id="btn-actualizar-mec">🔄</button>
+      <button onclick="mecLogout()" style="font-size:11px;color:#D01148;font-weight:500;border:1px solid #FFCDD2;background:#FFF5F7;padding:4px 10px;border-radius:6px;cursor:pointer;">↩ Salir</button>
+    </div>
   </div>
   <div class="panel-nav">
     <button class="panel-tab active" onclick="switchMecPanel('pendientes',this)">🔔 Pendientes</button>
@@ -1472,6 +1479,64 @@ function switchJefePanel(panel,btn){
 }
 
 function jefeLogout(){if(confirm('¿Deseas cerrar sesión?')) reiniciar();}
+
+async function jefeActualizar(){
+  var btn = document.getElementById('btn-actualizar-jefe');
+  if(btn){ btn.textContent='⏳'; btn.disabled=true; }
+  // Detectar qué panel está activo y recargarlo
+  var paneles = ['flota','kpis','alertas','mecanica'];
+  var activo = 'flota';
+  paneles.forEach(function(p){
+    var el = document.getElementById('jpanel-'+p);
+    if(el && el.classList.contains('active')) activo = p;
+  });
+  await cargarFlota();
+  if(activo === 'kpis') await renderKPIs();
+  if(activo === 'alertas') renderAlertas();
+  if(activo === 'mecanica') mjRenderAlertas();
+  // Si estamos en detalle de equipo, recargarlo
+  var det = document.getElementById('det-shell');
+  if(det && det.classList.contains('active') && equipoActual){
+    await abrirDetalle(equipoActual.id);
+  }
+  if(btn){ btn.textContent='🔄'; btn.disabled=false; }
+}
+
+async function mecActualizar(){
+  var btn = document.getElementById('btn-actualizar-mec');
+  if(btn){ btn.textContent='⏳'; btn.disabled=true; }
+  // Detectar panel activo del mecánico
+  var paneles = ['pendientes','registrar','historial'];
+  var activo = 'pendientes';
+  paneles.forEach(function(p){
+    var el = document.getElementById('mec-panel-'+p);
+    if(el && el.classList.contains('active')) activo = p;
+  });
+  await mecCargarFlota();
+  if(activo === 'historial') mecCargarHistorial();
+  if(btn){ btn.textContent='🔄'; btn.disabled=false; }
+}
+
+function appActualizar(){
+  var btn = document.getElementById('btn-actualizar-app');
+  if(btn){ btn.textContent='⏳'; btn.disabled=true; }
+  // Recargar lista de máquinas desde flota
+  cargarFlota().then(function(){
+    if(maqSel) {
+      // Si ya seleccionó máquina, refrescar el grid sin perder selección
+      buildMaqGrid();
+      // Re-seleccionar la máquina actual
+      document.querySelectorAll('.maq-btn').forEach(function(b){
+        if(b.textContent.includes(maqSel.id)) b.classList.add('selected');
+      });
+    } else {
+      buildMaqGrid();
+    }
+    if(btn){ btn.textContent='🔄'; btn.disabled=false; }
+  }).catch(function(){
+    if(btn){ btn.textContent='🔄'; btn.disabled=false; }
+  });
+}
 
 function formatearFecha(fechaStr){
   if(!fechaStr) return '';
