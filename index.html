@@ -701,7 +701,7 @@ textarea{resize:none;font-family:inherit;}
   <div class="form-grid">
     <div class="form-field"><label class="form-label">ID * <span style="font-size:10px;color:#888;">(Ej: CON-5)</span></label><input class="form-input" id="ne-id" placeholder="CON-5"/></div>
     <div class="form-field"><label class="form-label">Empresa *</label>
-      <select class="form-select" id="ne-empresa">
+      <select class="form-select" id="ne-empresa" onchange="sugerirIdEquipo()">
         <option value="CONTUBOS">CONTUBOS</option>
         <option value="TECNIPAPEL">TECNIPAPEL</option>
       </select>
@@ -1472,6 +1472,20 @@ function switchJefePanel(panel,btn){
 
 function jefeLogout(){if(confirm('¿Deseas cerrar sesión?')) reiniciar();}
 
+function sugerirIdEquipo(){
+  var empresa = document.getElementById('ne-empresa').value;
+  var prefijo = empresa === 'CONTUBOS' ? 'CON-' : 'TEC-';
+  // Buscar el mayor número existente para ese prefijo
+  var maxNum = 0;
+  flotaData.forEach(function(e){
+    if(String(e.id).startsWith(prefijo)){
+      var num = parseInt(String(e.id).replace(prefijo,'')) || 0;
+      if(num > maxNum) maxNum = num;
+    }
+  });
+  document.getElementById('ne-id').value = prefijo + (maxNum + 1);
+}
+
 function abrirFormNuevoEquipo(){
   // Limpiar campos
   ['ne-id','ne-descripcion','ne-marca','ne-serie','ne-placa','ne-modelo','ne-proveedor','ne-notas'].forEach(function(id){
@@ -1483,6 +1497,7 @@ function abrirFormNuevoEquipo(){
   document.getElementById('ne-intervalo').value='250';
   document.getElementById('ne-horometro').value='0';
   document.getElementById('ne-costo').value='0';
+  sugerirIdEquipo();
   document.getElementById('form-nuevo-equipo').classList.add('open');
   document.getElementById('overlay-nuevo-equipo').classList.add('open');
 }
