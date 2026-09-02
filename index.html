@@ -693,10 +693,80 @@ textarea{resize:none;font-family:inherit;}
   <button onclick="cerrarFormEditarEquipo()" style="width:100%;padding:11px;border-radius:10px;border:1px solid #E0DED8;background:transparent;color:#555;font-size:14px;cursor:pointer;margin-top:6px;">Cancelar</button>
 </div>
 
+<!-- ═══════════ FORM NUEVO EQUIPO ═══════════ -->
+<div class="form-overlay" id="overlay-nuevo-equipo" onclick="cerrarFormNuevoEquipo()"></div>
+<div class="form-equipo-edit" id="form-nuevo-equipo" style="max-height:90vh;overflow-y:auto;">
+  <div class="form-title">Agregar nuevo equipo</div>
+  <div class="form-grid">
+    <div class="form-field"><label class="form-label">ID * <span style="font-size:10px;color:#888;">(Ej: CON-5)</span></label><input class="form-input" id="ne-id" placeholder="CON-5"/></div>
+    <div class="form-field"><label class="form-label">Empresa *</label>
+      <select class="form-select" id="ne-empresa">
+        <option value="CONTUBOS">CONTUBOS</option>
+        <option value="TECNIPAPEL">TECNIPAPEL</option>
+      </select>
+    </div>
+  </div>
+  <div class="form-grid">
+    <div class="form-field"><label class="form-label">Tipo *</label>
+      <select class="form-select" id="ne-tipo">
+        <option value="Montacargas - Clamp">Montacargas - Clamp</option>
+        <option value="Montacargas - Uñas">Montacargas - Uñas</option>
+        <option value="Gato eléctrico">Gato eléctrico</option>
+        <option value="Otro">Otro</option>
+      </select>
+    </div>
+    <div class="form-field"><label class="form-label">Descripción</label><input class="form-input" id="ne-descripcion" placeholder="Ej: Clamp Nueva (pequeña)"/></div>
+  </div>
+  <div class="form-grid">
+    <div class="form-field"><label class="form-label">Marca</label><input class="form-input" id="ne-marca" placeholder="Toyota"/></div>
+    <div class="form-field"><label class="form-label">Capacidad (kg)</label><input class="form-input" type="number" id="ne-capacidad" placeholder="3000"/></div>
+  </div>
+  <div class="form-grid">
+    <div class="form-field"><label class="form-label">Combustible</label>
+      <select class="form-select" id="ne-combustible">
+        <option value="GLP">GLP</option>
+        <option value="Eléctrico">Eléctrico</option>
+        <option value="Diesel">Diesel</option>
+        <option value="Gasolina">Gasolina</option>
+      </select>
+    </div>
+    <div class="form-field"><label class="form-label">Estado</label>
+      <select class="form-select" id="ne-estado">
+        <option value="Operativo">Operativo</option>
+        <option value="En mantenimiento">En mantenimiento</option>
+        <option value="Dado de baja">Dado de baja</option>
+      </select>
+    </div>
+  </div>
+  <div class="form-grid">
+    <div class="form-field"><label class="form-label">Serie</label><input class="form-input" id="ne-serie" placeholder=""/></div>
+    <div class="form-field"><label class="form-label">Placa</label><input class="form-input" id="ne-placa" placeholder=""/></div>
+  </div>
+  <div class="form-grid">
+    <div class="form-field"><label class="form-label">Modelo</label><input class="form-input" id="ne-modelo" placeholder=""/></div>
+    <div class="form-field"><label class="form-label">Proveedor</label><input class="form-input" id="ne-proveedor" placeholder=""/></div>
+  </div>
+  <div class="form-grid">
+    <div class="form-field"><label class="form-label">Fecha compra</label><input class="form-input" type="date" id="ne-fecha-compra"/></div>
+    <div class="form-field"><label class="form-label">Valor compra ($)</label><input class="form-input" type="number" id="ne-valor-compra" placeholder="0"/></div>
+  </div>
+  <div class="form-grid">
+    <div class="form-field"><label class="form-label">Intervalo mant. (h)</label><input class="form-input" type="number" id="ne-intervalo" placeholder="250"/></div>
+    <div class="form-field"><label class="form-label">Horómetro inicial (h)</label><input class="form-input" type="number" id="ne-horometro" placeholder="0"/></div>
+  </div>
+  <div class="form-grid">
+    <div class="form-field"><label class="form-label">SOAT vencimiento</label><input class="form-input" type="date" id="ne-soat"/></div>
+    <div class="form-field"><label class="form-label">Costo acumulado ($)</label><input class="form-input" type="number" id="ne-costo" placeholder="0"/></div>
+  </div>
+  <div class="form-field"><label class="form-label">Notas</label><textarea class="form-textarea" id="ne-notas" rows="2" placeholder="Descripción adicional..."></textarea></div>
+  <button onclick="guardarNuevoEquipo()" id="btn-guardar-nuevo-equipo" style="width:100%;padding:12px;border-radius:10px;border:none;background:#D01148;color:#fff;font-size:15px;font-weight:600;cursor:pointer;margin-top:8px;">Agregar equipo</button>
+  <button onclick="cerrarFormNuevoEquipo()" style="width:100%;padding:11px;border-radius:10px;border:1px solid #E0DED8;background:transparent;color:#555;font-size:14px;cursor:pointer;margin-top:6px;">Cancelar</button>
+</div>
+
 </div><!-- /app -->
 
 <script>
-var SHEET_URL = 'https://script.google.com/macros/s/AKfycbxbMAdaOFI4NiW0QAVlu-traVUqxgfzDjKN0UsJtXli9CnMSL-wA4yrzXA2nHH8xmfb5Q/exec';
+var SHEET_URL = 'https://script.google.com/macros/s/AKfycbwC-zEqfXWDkdQSe-UJuWrAA_uyLu0PaChcap82dIce2W-LJXHCxiMvyLX4sMvPwGMJTA/exec';
 
 // ═══════════════════════════════════════════════════════
 // DATOS ESTÁTICOS
@@ -1400,6 +1470,75 @@ function switchJefePanel(panel,btn){
 }
 
 function jefeLogout(){if(confirm('¿Deseas cerrar sesión?')) reiniciar();}
+
+function abrirFormNuevoEquipo(){
+  // Limpiar campos
+  ['ne-id','ne-descripcion','ne-marca','ne-serie','ne-placa','ne-modelo','ne-proveedor','ne-notas'].forEach(function(id){
+    var el=document.getElementById(id); if(el) el.value='';
+  });
+  ['ne-capacidad','ne-valor-compra','ne-intervalo','ne-horometro','ne-costo'].forEach(function(id){
+    var el=document.getElementById(id); if(el) el.value='';
+  });
+  document.getElementById('ne-intervalo').value='250';
+  document.getElementById('ne-horometro').value='0';
+  document.getElementById('ne-costo').value='0';
+  document.getElementById('form-nuevo-equipo').classList.add('open');
+  document.getElementById('overlay-nuevo-equipo').classList.add('open');
+}
+
+function cerrarFormNuevoEquipo(){
+  document.getElementById('form-nuevo-equipo').classList.remove('open');
+  document.getElementById('overlay-nuevo-equipo').classList.remove('open');
+}
+
+async function guardarNuevoEquipo(){
+  var btn = document.getElementById('btn-guardar-nuevo-equipo');
+  var id = document.getElementById('ne-id').value.trim().toUpperCase();
+  var empresa = document.getElementById('ne-empresa').value;
+  var tipo = document.getElementById('ne-tipo').value;
+  if(!id){ alert('El ID del equipo es obligatorio. Ej: CON-5'); return; }
+  // Verificar que no exista ya
+  var existe = flotaData.find(function(e){ return e.id === id; });
+  if(existe){ alert('Ya existe un equipo con el ID ' + id); return; }
+
+  btn.innerHTML='<span class="spinner"></span>Guardando...'; btn.disabled=true;
+
+  var payload = {
+    action: 'addEquipo',
+    registrado_por: usuarioActual ? usuarioActual.nombre : '',
+    ID: id,
+    Empresa: empresa,
+    Tipo: tipo,
+    Descripcion: document.getElementById('ne-descripcion').value,
+    Marca: document.getElementById('ne-marca').value,
+    Capacidad_kg: document.getElementById('ne-capacidad').value || '0',
+    Combustible: document.getElementById('ne-combustible').value,
+    Serie: document.getElementById('ne-serie').value,
+    Placa: document.getElementById('ne-placa').value,
+    Modelo: document.getElementById('ne-modelo').value,
+    Fecha_compra: document.getElementById('ne-fecha-compra').value,
+    Valor_compra: document.getElementById('ne-valor-compra').value || '0',
+    Proveedor: document.getElementById('ne-proveedor').value,
+    Estado: document.getElementById('ne-estado').value,
+    Horometro_actual: document.getElementById('ne-horometro').value || '0',
+    Intervalo_mant_h: document.getElementById('ne-intervalo').value || '250',
+    Horometro_ultimo_mant: '0',
+    Prox_mant_h: String(parseInt(document.getElementById('ne-horometro').value||0) + parseInt(document.getElementById('ne-intervalo').value||250)),
+    Vencimiento_SOAT: document.getElementById('ne-soat').value,
+    Costo_acumulado: document.getElementById('ne-costo').value || '0',
+    Notas: document.getElementById('ne-notas').value
+  };
+
+  try{
+    await fetch(SHEET_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    cerrarFormNuevoEquipo();
+    await cargarFlota();
+    alert('Equipo ' + id + ' agregado correctamente.');
+  }catch(e){
+    alert('Error al guardar. Verifica la conexión.');
+  }
+  btn.innerHTML='Agregar equipo'; btn.disabled=false;
+}
 
 function jefeIrAChecklist(){
   document.getElementById('jefe-shell').style.display='none';
