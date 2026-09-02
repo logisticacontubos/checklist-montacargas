@@ -1911,56 +1911,57 @@ async function init(){
     var sesionGuardada = sessionStorage.getItem('mca_usuario');
     if(sesionGuardada) {
       var uSaved = JSON.parse(sesionGuardada);
-      // Verificar que el usuario sigue siendo válido
-      await loadUsuarios();
-      var existe = usuarios.find(function(u){ return u.pin === uSaved.pin; });
-      if(existe) {
-        usuarioActual = existe;
-        // Mostrar panel INMEDIATAMENTE sin esperar carga de datos
-        document.getElementById('login-screen').style.display='none';
-        // Cerrar cualquier detalle abierto — siempre ir al inicio del panel
+      // Mostrar panel INMEDIATAMENTE usando datos guardados — sin esperar red
+      usuarioActual = uSaved;
+      document.getElementById('login-screen').style.display='none';
+      equipoActual = null;
+      // Ir siempre al INICIO del panel correspondiente
+      if(usuarioActual.rol === 'jefe_logistica') {
+        var js = document.getElementById('jefe-shell');
+        js.style.display='flex';
+        var logosMain = document.querySelectorAll('.header-logos img');
+        var jl = [document.getElementById('jh-logo-c'), document.getElementById('jh-logo-t')];
+        if(logosMain.length>=2){jl[0].src=logosMain[0].src;jl[1].src=logosMain[1].src;}
+        document.querySelectorAll('.jpanel-item').forEach(function(p){p.classList.remove('active');});
+        document.getElementById('jpanel-flota').classList.add('active');
+        document.querySelectorAll('#jefe-shell .panel-tab').forEach(function(b){b.classList.remove('active');});
+        document.querySelector('#jefe-shell .panel-tab').classList.add('active');
+        var el = document.getElementById('equipo-list');
+        if(el) el.style.display='block';
         var det = document.getElementById('det-shell');
         if(det) det.classList.remove('active');
-        equipoActual = null;
-        if(usuarioActual.rol === 'jefe_logistica') {
-          // Mostrar jefe-shell inmediatamente con spinner
-          var js = document.getElementById('jefe-shell');
-          js.style.display='flex';
-          var logosMain = document.querySelectorAll('.header-logos img');
-          var jl = [document.getElementById('jh-logo-c'), document.getElementById('jh-logo-t')];
-          if(logosMain.length>=2){jl[0].src=logosMain[0].src;jl[1].src=logosMain[1].src;}
-          // Asegurar que está en pestaña Flota
-          document.querySelectorAll('.jpanel-item').forEach(function(p){p.classList.remove('active');});
-          document.querySelectorAll('#jefe-shell .panel-tab').forEach(function(b){b.classList.remove('active');});
-          document.getElementById('jpanel-flota').classList.add('active');
-          document.querySelector('#jefe-shell .panel-tab').classList.add('active');
-          // Asegurar que lista de equipos visible, no detalle
-          var el = document.getElementById('equipo-list');
-          if(el) el.style.display='block';
-          var ft = document.querySelector('.flota-tabs');
-          if(ft) ft.style.display='flex';
-          // Cargar flota
-          cargarFlota();
-        } else if(usuarioActual.rol === 'mecanico_logistica') {
-          initMecanico();
-        } else if(usuarioActual.rol === 'mensajero_administrativo') {
-          document.getElementById('app-shell').style.display='block';
-          buildMotoChecklist();
-          document.getElementById('moto-banner-text').innerHTML='<div class="pb-h">Checklist Moto</div><div class="pb-p">'+usuarioActual.nombre+' · 17 ítems</div>';
-          showPage('moto-1'); setProgress(25);
-        } else {
-          document.getElementById('app-shell').style.display='block';
-          setupUserDisplay(); buildMaqGrid(); showPage('page-1'); setProgress(10);
-        }
-        // Precargar flota en segundo plano
-        fetch(SHEET_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'getFlota'})})
-          .then(function(r){return r.json();})
-          .then(function(data){if(data.status==='ok'&&data.flota.length>0){flotaData=data.flota;if(flotaData.length>0) MAQUINAS=flotaData.filter(function(e){return String(e.estado||'').toLowerCase()!=='dado de baja';}).map(function(e){return{id:e.id,emp:String(e.empresa||'').toUpperCase(),tipo:e.tipo||'',nota:e.descripcion||'',esGato:String(e.tipo||'').toLowerCase().includes('gato')};});}})
-          .catch(function(){});
-        return; // No continuar con el flujo normal
+        cargarFlota(); // en segundo plano
+      } else if(usuarioActual.rol === 'mecanico_logistica') {
+        document.getElementById('mec-shell').style.display='flex';
+        var ml=[document.getElementById('mec-logo-c'),document.getElementById('mec-logo-t')];
+        var logosMain2=document.querySelectorAll('.header-logos img');
+        if(logosMain2.length>=2){ml[0].src=logosMain2[0].src;ml[1].src=logosMain2[1].src;}
+        document.getElementById('mec-nombre').textContent=usuarioActual.nombre;
+        var now=new Date();
+        document.getElementById('mec-fecha-hoy').textContent=now.toLocaleDateString('es-CO',{weekday:'long',day:'numeric',month:'long'});
+        document.getElementById('mec-ev-fecha').value=now.toISOString().split('T')[0];
+        document.getElementById('mec-ev-proveedor').value=usuarioActual.nombre;
+        mecCargarFlota();
+      } else if(usuarioActual.rol === 'mensajero_administrativo') {
+        document.getElementById('app-shell').style.display='block';
+        buildMotoChecklist();
+        document.getElementById('moto-banner-text').innerHTML='<div class="pb-h">Checklist Moto</div><div class="pb-p">'+usuarioActual.nombre+' · 17 ítems</div>';
+        showPage('moto-1'); setProgress(25);
+      } else {
+        document.getElementById('app-shell').style.display='block';
+        setupUserDisplay(); buildMaqGrid(); showPage('page-1'); setProgress(10);
       }
+      // Verificar usuario en segundo plano (sin bloquear UI)
+      loadUsuarios().catch(function(){});
+      // Precargar flota en segundo plano
+      fetch(SHEET_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'getFlota'})})
+        .then(function(r){return r.json();})
+        .then(function(data){if(data.status==='ok'&&data.flota.length>0){flotaData=data.flota;MAQUINAS=flotaData.filter(function(e){return String(e.estado||'').toLowerCase()!=='dado de baja';}).map(function(e){return{id:e.id,emp:String(e.empresa||'').toUpperCase(),tipo:e.tipo||'',nota:e.descripcion||'',esGato:String(e.tipo||'').toLowerCase().includes('gato')};});if(document.getElementById('page-1')&&document.getElementById('page-1').classList.contains('active'))buildMaqGrid();}})
+        .catch(function(){});
+      return;
     }
   } catch(e){}
+  // Si no hay sesión, cargar usuarios normalmente
   await loadUsuarios();
   // Precargar flota para tener las máquinas disponibles en el checklist
   try {
