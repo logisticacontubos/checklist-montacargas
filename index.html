@@ -774,7 +774,7 @@ textarea{resize:none;font-family:inherit;}
 </div><!-- /app -->
 
 <script>
-var SHEET_URL = 'https://script.google.com/macros/s/AKfycbxskVgyLeGLdmVw7BIs_xdH5CCXIfs-nJnFj5QIo5x74brw9YvXy6GbsZBDWvazBDM8iA/exec';
+var SHEET_URL = 'https://script.google.com/macros/s/AKfycbwilP97_hX_MlGu6m3Om3KuBXDJGXixf48TtUrYLBPEw_q102NrwGy51CwNW99xjlvHLg/exec';
 
 // ═══════════════════════════════════════════════════════
 // DATOS ESTÁTICOS
@@ -1520,41 +1520,54 @@ async function mecActualizar(){
 function appActualizar(){
   var btn = document.getElementById('btn-actualizar-app');
   if(btn){ btn.textContent='⏳'; btn.disabled=true; }
-  // Recargar lista de máquinas desde flota
-  cargarFlota().then(function(){
-    if(maqSel) {
-      // Si ya seleccionó máquina, refrescar el grid sin perder selección
-      buildMaqGrid();
-      // Re-seleccionar la máquina actual
-      document.querySelectorAll('.maq-btn').forEach(function(b){
-        if(b.textContent.includes(maqSel.id)) b.classList.add('selected');
-      });
-    } else {
-      buildMaqGrid();
-    }
-    if(btn){ btn.textContent='🔄'; btn.disabled=false; }
-  }).catch(function(){
-    if(btn){ btn.textContent='🔄'; btn.disabled=false; }
-  });
+  // Solo recargar datos en segundo plano sin cambiar la pantalla actual
+  fetch(SHEET_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'getFlota'})})
+    .then(function(r){return r.json();})
+    .then(function(data){
+      if(data.status==='ok'){
+        flotaData = data.flota;
+        // Solo reconstruir grid de máquinas si estamos en page-1
+        var p1 = document.getElementById('page-1');
+        if(p1 && p1.classList.contains('active')){
+          var selId = maqSel ? maqSel.id : null;
+          buildMaqGrid();
+          // Restaurar selección si había una
+          if(selId){
+            document.querySelectorAll('.maq-btn').forEach(function(b){
+              if(b.querySelector('.maq-id') && b.querySelector('.maq-id').textContent.trim().startsWith(selId)){
+                b.classList.add('selected');
+              }
+            });
+          }
+        }
+      }
+    })
+    .catch(function(){})
+    .finally(function(){
+      if(btn){ btn.textContent='🔄'; btn.disabled=false; }
+    });
 }
 
 function formatearFecha(fechaStr){
   if(!fechaStr) return '';
   try {
-    var s = String(fechaStr);
-    // Si es ISO (contiene T y Z), ajustar a Colombia UTC-5
+    var s = String(fechaStr).trim();
+    if(!s || s === '0' || s === 'undefined') return '';
+    // Si es ISO (contiene T), ajustar a Colombia UTC-5
     if(s.includes('T')){
       var d = new Date(s);
-      // Ajustar manualmente a UTC-5
       var co = new Date(d.getTime() - (5 * 60 * 60 * 1000));
       var dd = String(co.getUTCDate()).padStart(2,'0');
       var mm = String(co.getUTCMonth()+1).padStart(2,'0');
       var yyyy = co.getUTCFullYear();
       var hh = String(co.getUTCHours()).padStart(2,'0');
       var min = String(co.getUTCMinutes()).padStart(2,'0');
-      return dd+'/'+mm+'/'+yyyy+' '+hh+':'+min;
+        return dd+'/'+mm+'/'+yyyy+' '+hh+':'+min;
     }
-    return fechaStr;
+    // Si tiene 0:00:00 al final (fecha de Sheets sin hora), mostrar solo fecha
+    if(s.match(/\d+\/\d+\/\d{4}\s+0:00:00/)) return s.split(' ')[0];
+    if(s.includes('0:00:00')) return s.replace(' 0:00:00','').replace('0:00:00','');
+    return s;
   } catch(e){ return fechaStr; }
 }
 
@@ -1838,7 +1851,7 @@ async function mjCargarHistorial(){
         +(tieneFoto?'<span style="font-size:16px;margin-left:auto;">📸</span>':'')+'</div>'
         +'<div style="font-size:12px;color:#555;margin-bottom:3px;">'+(ev.descripcion_||ev.descripcion||'—')+'</div>'
         +'<div style="display:flex;justify-content:space-between;align-items:center;">'
-        +'<span style="font-size:11px;color:#AAA;">'+formatearFecha(ev.fecha_||ev.fecha||'')+' · '+(ev.horometro_h||ev.horometro||'')+' h'+(reg?' · '+reg:'')+'</span>'
+        +'<span style="font-size:11px;color:#AAA;">'+formatearFecha(ev.timestamp_||ev.timestamp||ev.fecha_||ev.fecha||'')+' · '+(ev.horometro_h||ev.horometro||'')+' h'+(reg?' · '+reg:'')+'</span>'
         +(costo>0?'<span style="font-size:13px;font-weight:600;">$'+costo.toLocaleString()+'</span>':'')
         +'</div></div>';
     }).join('');
