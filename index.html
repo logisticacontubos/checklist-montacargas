@@ -1800,8 +1800,32 @@ async function mjGuardarEvento(){
   btn.innerHTML='Guardar registro';btn.disabled=false;
 }
 
-// Cargar usuarios al inicio
-loadUsuarios();
+// Cargar usuarios y flota al inicio
+async function init(){
+  await loadUsuarios();
+  // Precargar flota para tener las máquinas disponibles en el checklist
+  try {
+    var resp = await fetch(SHEET_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'getFlota'})});
+    var data = await resp.json();
+    if(data.status==='ok'){
+      flotaData = data.flota;
+      // Reconstruir MAQUINAS desde FLOTA (solo equipos operativos o sin baja)
+      var maqsDinamicas = data.flota.filter(function(e){
+        return String(e.estado||'').toLowerCase() !== 'dado de baja';
+      }).map(function(e){
+        return {
+          id: e.id,
+          emp: String(e.empresa||'').toUpperCase(),
+          tipo: e.tipo||'',
+          nota: e.descripcion||'',
+          esGato: String(e.tipo||'').toLowerCase().includes('gato')
+        };
+      });
+      if(maqsDinamicas.length > 0) MAQUINAS = maqsDinamicas;
+    }
+  } catch(e){ console.log('Flota no precargada, usando lista local'); }
+}
+init();
 </script>
 </body>
 </html>
