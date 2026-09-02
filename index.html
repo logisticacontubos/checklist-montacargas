@@ -959,6 +959,8 @@ async function loadUsuarios(){
 // ROUTING POR ROL
 // ═══════════════════════════════════════════════════════
 function enterApp(){
+  // Guardar sesión para sobrevivir F5
+  try { sessionStorage.setItem('mca_usuario', JSON.stringify(usuarioActual)); } catch(e){}
   document.getElementById('login-screen').style.display='none';
   if(usuarioActual.rol==='mensajero_administrativo'){
     document.getElementById('app-shell').style.display='block';
@@ -1108,6 +1110,8 @@ function setProgress(pct){document.getElementById('progress').style.width=pct+'%
 function cerrarAppYSalir(){if(confirm('¿Deseas salir? El progreso no guardado se perderá.'))reiniciar();}
 
 function reiniciar(){
+  // Limpiar sesión guardada
+  try { sessionStorage.removeItem('mca_usuario'); } catch(e){}
   usuarioActual=null;maqSel=null;esGato=false;respEst={};respDin={};
   document.getElementById('horometro').value='';document.getElementById('observaciones').value='';
   var na=document.getElementById('notas-alert');if(na)na.style.display='none';
@@ -1901,6 +1905,40 @@ async function mjGuardarEvento(){
 
 // Cargar usuarios y flota al inicio
 async function init(){
+  // Verificar sesión guardada (solo si la pestaña sigue abierta = sessionStorage)
+  try {
+    var sesionGuardada = sessionStorage.getItem('mca_usuario');
+    if(sesionGuardada) {
+      var uSaved = JSON.parse(sesionGuardada);
+      // Verificar que el usuario sigue siendo válido
+      await loadUsuarios();
+      var existe = usuarios.find(function(u){ return u.pin === uSaved.pin; });
+      if(existe) {
+        usuarioActual = existe;
+        // Ir al panel principal según rol — siempre al inicio del panel, no a la última pantalla
+        document.getElementById('login-screen').style.display='none';
+        if(usuarioActual.rol === 'jefe_logistica') {
+          initJefe();
+        } else if(usuarioActual.rol === 'mecanico_logistica') {
+          initMecanico();
+        } else if(usuarioActual.rol === 'mensajero_administrativo') {
+          document.getElementById('app-shell').style.display='block';
+          buildMotoChecklist();
+          document.getElementById('moto-banner-text').innerHTML='<div class="pb-h">Checklist Moto</div><div class="pb-p">'+usuarioActual.nombre+' · 17 ítems</div>';
+          showPage('moto-1'); setProgress(25);
+        } else {
+          document.getElementById('app-shell').style.display='block';
+          setupUserDisplay(); buildMaqGrid(); showPage('page-1'); setProgress(10);
+        }
+        // Precargar flota en segundo plano
+        fetch(SHEET_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'getFlota'})})
+          .then(function(r){return r.json();})
+          .then(function(data){if(data.status==='ok'&&data.flota.length>0){flotaData=data.flota;if(flotaData.length>0) MAQUINAS=flotaData.filter(function(e){return String(e.estado||'').toLowerCase()!=='dado de baja';}).map(function(e){return{id:e.id,emp:String(e.empresa||'').toUpperCase(),tipo:e.tipo||'',nota:e.descripcion||'',esGato:String(e.tipo||'').toLowerCase().includes('gato')};});}})
+          .catch(function(){});
+        return; // No continuar con el flujo normal
+      }
+    }
+  } catch(e){}
   await loadUsuarios();
   // Precargar flota para tener las máquinas disponibles en el checklist
   try {
