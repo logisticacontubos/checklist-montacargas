@@ -1113,6 +1113,7 @@ function reiniciar(){
   // Limpiar sesión guardada
   try { sessionStorage.removeItem('mca_usuario'); } catch(e){}
   usuarioActual=null;maqSel=null;esGato=false;respEst={};respDin={};
+  equipoActual=null;
   document.getElementById('horometro').value='';document.getElementById('observaciones').value='';
   var na=document.getElementById('notas-alert');if(na)na.style.display='none';
   var b4=document.getElementById('btn4');if(b4){b4.innerHTML='Guardar en Sheets';b4.disabled=false;}
@@ -1915,10 +1916,31 @@ async function init(){
       var existe = usuarios.find(function(u){ return u.pin === uSaved.pin; });
       if(existe) {
         usuarioActual = existe;
-        // Ir al panel principal según rol — siempre al inicio del panel, no a la última pantalla
+        // Mostrar panel INMEDIATAMENTE sin esperar carga de datos
         document.getElementById('login-screen').style.display='none';
+        // Cerrar cualquier detalle abierto — siempre ir al inicio del panel
+        var det = document.getElementById('det-shell');
+        if(det) det.classList.remove('active');
+        equipoActual = null;
         if(usuarioActual.rol === 'jefe_logistica') {
-          initJefe();
+          // Mostrar jefe-shell inmediatamente con spinner
+          var js = document.getElementById('jefe-shell');
+          js.style.display='flex';
+          var logosMain = document.querySelectorAll('.header-logos img');
+          var jl = [document.getElementById('jh-logo-c'), document.getElementById('jh-logo-t')];
+          if(logosMain.length>=2){jl[0].src=logosMain[0].src;jl[1].src=logosMain[1].src;}
+          // Asegurar que está en pestaña Flota
+          document.querySelectorAll('.jpanel-item').forEach(function(p){p.classList.remove('active');});
+          document.querySelectorAll('#jefe-shell .panel-tab').forEach(function(b){b.classList.remove('active');});
+          document.getElementById('jpanel-flota').classList.add('active');
+          document.querySelector('#jefe-shell .panel-tab').classList.add('active');
+          // Asegurar que lista de equipos visible, no detalle
+          var el = document.getElementById('equipo-list');
+          if(el) el.style.display='block';
+          var ft = document.querySelector('.flota-tabs');
+          if(ft) ft.style.display='flex';
+          // Cargar flota
+          cargarFlota();
         } else if(usuarioActual.rol === 'mecanico_logistica') {
           initMecanico();
         } else if(usuarioActual.rol === 'mensajero_administrativo') {
