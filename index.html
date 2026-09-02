@@ -265,6 +265,19 @@ textarea{resize:none;font-family:inherit;}
 .mhb-soat{background:#EDE7F6;color:#4527A0;}
 .mhb-otro{background:#F3E5F5;color:#6A1B9A;}
 .mec-no-data{text-align:center;padding:24px;font-size:13px;color:#AAA;}
+
+.loading-toast{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
+  background:rgba(0,0,0,0.75);color:#fff;padding:16px 24px;border-radius:12px;
+  display:none;flex-direction:column;align-items:center;gap:10px;z-index:999;
+  font-size:14px;text-align:center;min-width:160px;}
+.loading-toast.show{display:flex;}
+.loading-toast .lt-spinner{width:32px;height:32px;border:3px solid rgba(255,255,255,0.3);
+  border-top-color:#fff;border-radius:50%;animation:spin 0.7s linear infinite;}
+.loading-toast .lt-text{font-size:13px;color:rgba(255,255,255,0.9);}
+.btn-primary.loading{background:#A80D38;cursor:not-allowed;}
+.btn-primary.loading::before{content:'';display:inline-block;width:14px;height:14px;
+  border:2px solid rgba(255,255,255,0.4);border-top-color:#fff;border-radius:50%;
+  animation:spin 0.7s linear infinite;vertical-align:-3px;margin-right:8px;}
 </style>
 </head>
 <body>
@@ -504,7 +517,7 @@ textarea{resize:none;font-family:inherit;}
       <div class="ftab" onclick="filtrarFlota('alerta',this)">⚠ Alertas</div>
     </div>
     <div style="padding:0.75rem;" id="equipo-list">
-      <div class="loading-overlay"><div class="loading-spinner"></div><div class="loading-text">Cargando flota...</div></div>
+      <div class="loading-overlay"><div class="loading-spinner"></div><div class="loading-text">Cargando equipos...</div></div>
     </div>
 
     <!-- Detalle equipo -->
@@ -543,10 +556,10 @@ textarea{resize:none;font-family:inherit;}
           <div class="kpi-box"><div class="kpi-lbl">Con alertas</div><div class="kpi-val" style="color:#F0A500;" id="kpi-alerta">-</div><div class="kpi-sub">amarillo + rojo</div></div>
         </div>
       </div>
-      <div class="kpi-card"><div class="kpi-section-title">Equipos sin inspección hoy</div><div id="kpi-sin-inspeccion"><div class="loading-overlay" style="padding:1rem;"><div class="loading-spinner"></div></div></div></div>
-      <div class="kpi-card"><div class="kpi-section-title">Top ítems en NO — última semana</div><div id="kpi-top-nos"><div class="loading-overlay" style="padding:1rem;"><div class="loading-spinner"></div></div></div></div>
-      <div class="kpi-card"><div class="kpi-section-title">Próximos mantenimientos</div><div id="kpi-proximos"><div class="loading-overlay" style="padding:1rem;"><div class="loading-spinner"></div></div></div></div>
-      <div class="kpi-card"><div class="kpi-section-title">Inspecciones por operario</div><div id="kpi-por-operario"><div class="loading-overlay" style="padding:1rem;"><div class="loading-spinner"></div></div></div></div>
+      <div class="kpi-card"><div class="kpi-section-title">Equipos sin inspección hoy</div><div id="kpi-sin-inspeccion"><div class="loading-overlay" style="padding:1rem;"><div class="loading-spinner"></div><div class="loading-text" style="font-size:12px;">Cargando...</div></div></div></div>
+      <div class="kpi-card"><div class="kpi-section-title">Top ítems en NO — última semana</div><div id="kpi-top-nos"><div class="loading-overlay" style="padding:1rem;"><div class="loading-spinner"></div><div class="loading-text" style="font-size:12px;">Cargando...</div></div></div></div>
+      <div class="kpi-card"><div class="kpi-section-title">Próximos mantenimientos</div><div id="kpi-proximos"><div class="loading-overlay" style="padding:1rem;"><div class="loading-spinner"></div><div class="loading-text" style="font-size:12px;">Cargando...</div></div></div></div>
+      <div class="kpi-card"><div class="kpi-section-title">Inspecciones por operario</div><div id="kpi-por-operario"><div class="loading-overlay" style="padding:1rem;"><div class="loading-spinner"></div><div class="loading-text" style="font-size:12px;">Cargando...</div></div></div></div>
     </div>
   </div>
 
@@ -1172,6 +1185,7 @@ document.getElementById('btn-moto-nueva').addEventListener('click',function(){
 // ═══════════════════════════════════════════════════════
 async function enviarInspeccion(){
   var btn=document.getElementById('btn4');
+  showLoading('Guardando inspección...');
   btn.innerHTML='<span class="spinner"></span>Guardando...';btn.disabled=true;
   var now=new Date();var noItems=getNoItems();
   var payload={action:'saveInspeccion',fecha:now.toLocaleDateString('es-CO'),hora:now.toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'}),
@@ -1185,13 +1199,14 @@ async function enviarInspeccion(){
     if(noItems.length>0){var a=document.getElementById('notas-alert');a.style.display='block';a.innerHTML='<strong>Notificar al supervisor:</strong><br>'+noItems.join('<br>');}
     var bd=document.getElementById('btn-volver-dashboard');
     if(bd&&usuarioActual&&usuarioActual.rol==='jefe_logistica') bd.style.display='block';
-  }catch(err){btn.innerHTML='Guardar en Sheets';btn.disabled=false;alert('Error al guardar. Verifica la conexión.');}
+  }catch(err){hideLoading();btn.innerHTML='Guardar en Sheets';btn.disabled=false;alert('Error al guardar. Verifica la conexión.');}
 }
 
 async function enviarMoto(){
   var btn=document.getElementById('btn-moto2');
   var km=document.getElementById('kilometraje').value.trim();
   if(!km){alert('Debes ingresar el kilometraje');return;}
+  showLoading('Guardando checklist...');
   btn.innerHTML='<span class="spinner"></span>Guardando...';btn.disabled=true;
   var now=new Date();var noItems=getNoMoto();
   var payload={action:'saveMoto',fecha:now.toLocaleDateString('es-CO'),hora:now.toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'}),
@@ -1216,12 +1231,14 @@ async function initJefe(){
 }
 
 async function cargarFlota(){
+  showLoading('Cargando flota...');
   try{
     var resp=await fetch(SHEET_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'getFlota'})});
     var data=await resp.json();
     if(data.status==='ok'){flotaData=data.flota;renderFlota();updateFlotaSub();}
     else throw new Error(data.message);
   }catch(e){document.getElementById('equipo-list').innerHTML='<div class="mec-no-data">Error cargando flota.</div>';}
+  finally{hideLoading();}
 }
 
 function updateFlotaSub(){
@@ -1261,6 +1278,7 @@ function renderFlota(){
 }
 
 async function abrirDetalle(equipoId){
+  showLoading('Cargando equipo...');
   equipoActual=flotaData.find(function(e){return e.id===equipoId;});
   if(!equipoActual){await cargarFlota();equipoActual=flotaData.find(function(e){return e.id===equipoId;});if(!equipoActual)return;}
   document.getElementById('equipo-list').style.display='none';
@@ -1307,7 +1325,7 @@ async function abrirDetalle(equipoId){
 
 async function cargarEventos(equipoId){
   var div=document.getElementById('det-eventos');
-  div.innerHTML='<div class="mec-no-data">Cargando...</div>';
+  div.innerHTML='<div class="mec-no-data">Cargando eventos...</div>';
   try{
     var resp=await fetch(SHEET_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'getEventos',equipo_id:equipoId})});
     var data=await resp.json();
@@ -1320,9 +1338,11 @@ async function cargarEventos(equipoId){
       }).join('');
     } else div.innerHTML='<div class="mec-no-data">Sin eventos registrados.</div>';
   }catch(e){div.innerHTML='<div class="mec-no-data">Error al cargar eventos.</div>';}
+  finally{hideLoading();}
 }
 
 function cerrarDetalle(){
+  hideLoading();
   var ds = document.getElementById('det-shell');
   if(ds) ds.classList.remove('active');
   var el = document.getElementById('equipo-list');
@@ -1432,6 +1452,7 @@ async function renderKPIs(){
   var proximos=flotaData.filter(function(e){return(parseFloat(e.horas_restantes)||0)<=50;}).sort(function(a,b){return(a.horas_restantes||0)-(b.horas_restantes||0);});
   var dp=document.getElementById('kpi-proximos');
   dp.innerHTML=proximos.length===0?'<div style="font-size:13px;color:#27A846;text-align:center;padding:10px;">✓ Todos al día.</div>':proximos.map(function(e){var h=Math.round(e.horas_restantes||0);var color=h<0?'#D01148':h<=20?'#F0A500':'#888';return '<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #F0EEE8;font-size:13px;"><span style="font-weight:500;">'+e.id+' <span style="color:#888;font-size:11px;">'+e.descripcion+'</span></span><span style="font-weight:600;color:'+color+';">'+(h<0?'Vencido':'+'+h+' h')+'</span></div>';}).join('');
+  showLoading('Calculando KPIs...');
   try{
     var resp=await fetch(SHEET_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'getKPIs'})});
     var data=await resp.json();
@@ -1449,6 +1470,7 @@ async function renderKPIs(){
       do2.innerHTML=ops.length===0?'<div style="font-size:13px;color:#AAA;text-align:center;padding:8px;">Sin registros.</div>':ops.map(function(op){return '<div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #F0EEE8;font-size:13px;"><span style="font-weight:500;">'+op[0]+'</span><span style="color:#888;">'+op[1].inspecciones+' insp. · <span style="color:'+(op[1].nos>0?'#D01148':'#27A846')+';">'+op[1].nos+' NOs</span></span></div>';}).join('');
     }
   }catch(e){console.error('KPIs error:',e);}
+  finally{hideLoading();}
 }
 
 function renderAlertas(){
@@ -1684,11 +1706,13 @@ async function initMecanico(){
 }
 
 async function mecCargarFlota(){
+  showLoading('Conectando...');
   try{
     var resp=await fetch(SHEET_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'getFlota'})});
     var data=await resp.json();
     if(data.status==='ok'){mecFlotaData=data.flota;mecRenderAlertas();mecPoblarSelectEquipo();}
   }catch(e){document.getElementById('mec-alertas-list').innerHTML='<div class="mec-no-data">Error cargando datos.</div>';}
+  finally{hideLoading();}
 }
 
 function mecPoblarSelectEquipo(){
@@ -1722,14 +1746,12 @@ function mecIrARegistrar(equipoId){
 
 async function mecCargarHistorial(){
   var div=document.getElementById('mec-historial-list');
-  div.innerHTML='<div class="loading-overlay"><div class="loading-spinner"></div><div class="loading-text">Cargando...</div></div>';
+  div.innerHTML='<div class="loading-overlay"><div class="loading-spinner"></div><div class="loading-text">Cargando historial...</div></div>';
   try{
-    var todos=[];
-    for(var i=0;i<mecFlotaData.length;i++){
-      var resp=await fetch(SHEET_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'getEventos',equipo_id:mecFlotaData[i].id})});
-      var data=await resp.json();
-      if(data.status==='ok'){data.eventos.forEach(function(ev){ev._eq=mecFlotaData[i].id;});todos=todos.concat(data.eventos);}
-    }
+    // Una sola petición para todos los eventos
+    var resp=await fetch(SHEET_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'getEventosTodos'})});
+    var result=await resp.json();
+    var todos=result.status==='ok'?result.eventos:[];
     if(!todos.length){div.innerHTML='<div class="mec-no-data">Sin registros aún.</div>';return;}
     var tc={Preventivo:'mhb-prev',Correctivo:'mhb-corr',SOAT:'mhb-soat',Otro:'mhb-otro'};
     div.innerHTML=todos.slice(0,30).map(function(ev){
@@ -1737,6 +1759,7 @@ async function mecCargarHistorial(){
       return '<div class="mec-hist-item"><div class="mec-hist-top"><span class="mec-hist-badge '+(tc[tipo]||'mhb-otro')+'">'+tipo.substring(0,4)+'</span><span style="font-size:13px;font-weight:600;color:#1A1A1A;">'+ev._eq+'</span>'+(tieneFoto?'<span style="font-size:16px;margin-left:auto;">📸</span>':'')+'</div><div style="font-size:12px;color:#555;margin-bottom:3px;">'+(ev.descripcion_||ev.descripcion||'—')+'</div><div style="display:flex;justify-content:space-between;"><span style="font-size:11px;color:#AAA;">'+(ev.fecha_||ev.fecha||'')+' · '+(ev.horometro_h||ev.horometro||'')+' h</span>'+(costo>0?'<span style="font-size:13px;font-weight:600;">$'+costo.toLocaleString()+'</span>':'')+'</div></div>';
     }).join('');
   }catch(e){div.innerHTML='<div class="mec-no-data">Error cargando historial.</div>';}
+  finally{hideLoading();}
 }
 
 function mecPreviewFotos(input){
@@ -1750,6 +1773,7 @@ async function mecGuardarEvento(){
   var fecha=document.getElementById('mec-ev-fecha').value;
   var desc=document.getElementById('mec-ev-descripcion').value.trim();
   if(!fecha||!desc){alert('Fecha y descripción son obligatorios.');return;}
+  showLoading('Guardando registro...');
   btn.innerHTML='<span class="spinner"></span>Guardando...';btn.disabled=true;
   var equipoId=document.getElementById('mec-ev-equipo').value;
   var tipo=document.getElementById('mec-ev-tipo').value;
@@ -1767,6 +1791,7 @@ async function mecGuardarEvento(){
     switchMecPanel('pendientes',document.querySelectorAll('#mec-shell .panel-tab')[0]);
   }catch(e){alert('Error al guardar.');}
   btn.innerHTML='Guardar registro';btn.disabled=false;
+  hideLoading();
 }
 
 function switchMecPanel(panel,btn){
@@ -1835,14 +1860,17 @@ function switchMecJefeTab(panel, btn){
 
 async function mjCargarHistorial(){
   var div = document.getElementById('mj-historial-list');
-  div.innerHTML = '<div class="loading-overlay"><div class="loading-spinner"></div><div class="loading-text">Cargando...</div></div>';
+  div.innerHTML = '<div class="loading-overlay"><div class="loading-spinner"></div><div class="loading-text">Cargando historial...</div></div>';
   try{
     var todos = [];
-    for(var i=0;i<flotaData.length;i++){
-      var resp = await fetch(SHEET_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'getEventos',equipo_id:flotaData[i].id})});
-      var data = await resp.json();
-      if(data.status==='ok'){data.eventos.forEach(function(ev){ev._eq=flotaData[i].id;});todos=todos.concat(data.eventos);}
-    }
+    // Cargar todos en paralelo
+    var promesas=flotaData.map(function(eq){
+      return fetch(SHEET_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'getEventos',equipo_id:eq.id})})
+        .then(function(r){return r.json();})
+        .then(function(data){if(data.status==='ok') data.eventos.forEach(function(ev){ev._eq=eq.id;todos.push(ev);});})
+        .catch(function(){});
+    });
+    await Promise.all(promesas);
     if(!todos.length){div.innerHTML='<div class="mec-no-data">Sin registros aún.</div>';return;}
     var tc = {Preventivo:'mhb-prev',Correctivo:'mhb-corr',SOAT:'mhb-soat',Otro:'mhb-otro'};
     div.innerHTML = todos.slice(0,50).map(function(ev){
@@ -1902,6 +1930,17 @@ async function mjGuardarEvento(){
     switchMecJefeTab('pendientes',document.getElementById('mj-tab-pend'));
   }catch(e){alert('Error al guardar.');}
   btn.innerHTML='Guardar registro';btn.disabled=false;
+}
+
+
+function showLoading(msg){
+  var t=document.getElementById('loading-toast');
+  document.getElementById('loading-toast-text').textContent=msg||'Cargando...';
+  if(t) t.classList.add('show');
+}
+function hideLoading(){
+  var t=document.getElementById('loading-toast');
+  if(t) t.classList.remove('show');
 }
 
 // Cargar usuarios y flota al inicio
@@ -1987,5 +2026,10 @@ async function init(){
 }
 init();
 </script>
+
+<div class="loading-toast" id="loading-toast">
+  <div class="lt-spinner"></div>
+  <div class="lt-text" id="loading-toast-text">Cargando...</div>
+</div>
 </body>
 </html>
