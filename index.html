@@ -1311,7 +1311,7 @@ async function cargarEventos(equipoId){
       div.innerHTML=data.eventos.map(function(ev){
         var tipo=ev.tipo_||ev.tipo||'Otro';
         var costo=parseFloat(ev.costo_||ev.costo||0);
-        return '<div class="evento-item"><span class="evento-tipo-badge '+(tc[tipo]||'etb-otro')+'">'+tipo.substring(0,4)+'</span><div class="evento-body"><div class="evento-desc-text">'+(ev.descripcion_||ev.descripcion||'—')+'</div><div class="evento-meta">'+formatearFecha(ev.fecha_||ev.fecha||'')+' · '+(ev.horometro_h||ev.horometro||'')+' h · '+(ev.proveedor_taller||ev.proveedor||'')+'</div></div>'+(costo>0?'<div class="evento-costo">$'+costo.toLocaleString()+'</div>':'')+'</div>';
+        return '<div class="evento-item"><span class="evento-tipo-badge '+(tc[tipo]||'etb-otro')+'">'+tipo.substring(0,4)+'</span><div class="evento-body"><div class="evento-desc-text">'+(ev.descripcion_||ev.descripcion||'—')+'</div><div class="evento-meta">'+formatearFecha(ev.timestamp||ev.fecha_||ev.fecha||'')+' · '+(ev.horometro_h||ev.horometro||'')+' h · '+(ev.proveedor_taller||ev.proveedor||'')+'</div></div>'+(costo>0?'<div class="evento-costo">$'+costo.toLocaleString()+'</div>':'')+'</div>';
       }).join('');
     } else div.innerHTML='<div class="mec-no-data">Sin eventos registrados.</div>';
   }catch(e){div.innerHTML='<div class="mec-no-data">Error al cargar eventos.</div>';}
