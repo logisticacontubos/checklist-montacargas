@@ -560,6 +560,35 @@ textarea{resize:none;font-family:inherit;}
       <div class="kpi-card"><div class="kpi-section-title">Top ítems en NO — última semana</div><div id="kpi-top-nos"><div class="loading-overlay" style="padding:1rem;"><div class="loading-spinner"></div><div class="loading-text" style="font-size:12px;">Cargando...</div></div></div></div>
       <div class="kpi-card"><div class="kpi-section-title">Próximos mantenimientos</div><div id="kpi-proximos"><div class="loading-overlay" style="padding:1rem;"><div class="loading-spinner"></div><div class="loading-text" style="font-size:12px;">Cargando...</div></div></div></div>
       <div class="kpi-card"><div class="kpi-section-title">Inspecciones por operario</div><div id="kpi-por-operario"><div class="loading-overlay" style="padding:1rem;"><div class="loading-spinner"></div><div class="loading-text" style="font-size:12px;">Cargando...</div></div></div></div>
+
+      <!-- Horas trabajadas por equipo -->
+      <div class="kpi-card">
+        <div class="kpi-section-title">Horas trabajadas por equipo
+          <select id="kpi-horas-periodo" onchange="renderKPIsHoras()" style="font-size:11px;padding:2px 6px;border:1px solid #E0DED8;border-radius:5px;background:#FAFAF8;font-weight:400;color:#555;">
+            <option value="semana">Esta semana</option>
+            <option value="mes">Este mes</option>
+            <option value="anio">Este año</option>
+          </select>
+        </div>
+        <div id="kpi-horas-equipos"><div class="loading-overlay" style="padding:1rem;"><div class="loading-spinner"></div></div></div>
+      </div>
+
+      <!-- Costos de mantenimiento -->
+      <div class="kpi-card">
+        <div class="kpi-section-title">Costos de mantenimiento
+          <select id="kpi-costos-periodo" onchange="renderKPIsCostos()" style="font-size:11px;padding:2px 6px;border:1px solid #E0DED8;border-radius:5px;background:#FAFAF8;font-weight:400;color:#555;">
+            <option value="mes">Este mes</option>
+            <option value="semana">Esta semana</option>
+            <option value="anio">Este año</option>
+            <option value="total">Total acumulado</option>
+          </select>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
+          <div class="kpi-box"><div class="kpi-lbl">Total período</div><div class="kpi-val" style="font-size:20px;" id="kpi-costo-total">-</div></div>
+          <div class="kpi-box"><div class="kpi-lbl">Equipos con costo</div><div class="kpi-val" style="font-size:20px;" id="kpi-costo-equipos">-</div></div>
+        </div>
+        <div id="kpi-costos-detalle"><div class="loading-overlay" style="padding:1rem;"><div class="loading-spinner"></div></div></div>
+      </div>
     </div>
   </div>
 
@@ -1471,6 +1500,67 @@ async function renderKPIs(){
     }
   }catch(e){console.error('KPIs error:',e);}
   finally{hideLoading();}
+  // Cargar KPIs de mantenimiento en paralelo
+  cargarKPIsMant();
+}
+
+var kpisMantData = null;
+
+async function cargarKPIsMant(){
+  try{
+    var resp = await fetch(SHEET_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'getKPIsMant'})});
+    var data = await resp.json();
+    if(data.status==='ok'){
+      kpisMantData = data.kpis_mant;
+      renderKPIsHoras();
+      renderKPIsCostos();
+    }
+  }catch(e){console.error('KPIs mant error:',e);}
+}
+
+function renderKPIsHoras(){
+  var div = document.getElementById('kpi-horas-equipos');
+  if(!div) return;
+  if(!kpisMantData){div.innerHTML='<div style="font-size:13px;color:#AAA;text-align:center;padding:8px;">Cargando...</div>';return;}
+  var periodo = document.getElementById('kpi-horas-periodo').value;
+  var horas = kpisMantData.horas || {};
+  var equipos = Object.keys(horas).filter(function(eq){return (horas[eq][periodo]||0)>0;}).sort(function(a,b){return (horas[b][periodo]||0)-(horas[a][periodo]||0);});
+  if(!equipos.length){div.innerHTML='<div style="font-size:13px;color:#AAA;text-align:center;padding:8px;">Sin datos para este período.</div>';return;}
+  var maxH = Math.max.apply(null, equipos.map(function(eq){return horas[eq][periodo]||0;}));
+  div.innerHTML = equipos.map(function(eq){
+    var h = horas[eq][periodo]||0;
+    var pct = maxH>0?Math.round((h/maxH)*100):0;
+    return '<div style="margin-bottom:8px;">'
+      +'<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px;">'
+      +'<span style="font-weight:500;">'+eq+'</span><span style="font-weight:600;color:#185FA5;">'+h+' h</span></div>'
+      +'<div style="background:#F0EEE8;border-radius:3px;height:6px;">'
+      +'<div style="background:#185FA5;height:6px;border-radius:3px;width:'+pct+'%;"></div></div></div>';
+  }).join('');
+}
+
+function renderKPIsCostos(){
+  var div = document.getElementById('kpi-costos-detalle');
+  if(!div) return;
+  if(!kpisMantData){div.innerHTML='<div style="font-size:13px;color:#AAA;text-align:center;padding:8px;">Cargando...</div>';return;}
+  var periodo = document.getElementById('kpi-costos-periodo').value;
+  var costos = kpisMantData.costos || {};
+  var equipos = Object.keys(costos).filter(function(eq){return (costos[eq][periodo]||0)>0;}).sort(function(a,b){return (costos[b][periodo]||0)-(costos[a][periodo]||0);});
+  var total = equipos.reduce(function(s,eq){return s+(costos[eq][periodo]||0);},0);
+  var totEl = document.getElementById('kpi-costo-total');
+  var eqEl = document.getElementById('kpi-costo-equipos');
+  if(totEl) totEl.textContent = '$'+total.toLocaleString();
+  if(eqEl) eqEl.textContent = equipos.length;
+  if(!equipos.length){div.innerHTML='<div style="font-size:13px;color:#AAA;text-align:center;padding:8px;">Sin costos para este período.</div>';return;}
+  var maxC = Math.max.apply(null, equipos.map(function(eq){return costos[eq][periodo]||0;}));
+  div.innerHTML = equipos.map(function(eq){
+    var c = costos[eq][periodo]||0;
+    var pct = maxC>0?Math.round((c/maxC)*100):0;
+    return '<div style="margin-bottom:8px;">'
+      +'<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px;">'
+      +'<span style="font-weight:500;">'+eq+'</span><span style="font-weight:600;color:#D01148;">$'+c.toLocaleString()+'</span></div>'
+      +'<div style="background:#F0EEE8;border-radius:3px;height:6px;">'
+      +'<div style="background:#D01148;height:6px;border-radius:3px;width:'+pct+'%;"></div></div></div>';
+  }).join('');
 }
 
 function renderAlertas(){
