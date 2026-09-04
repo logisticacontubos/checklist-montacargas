@@ -1229,7 +1229,7 @@ async function enviarInspeccion(){
   btn.innerHTML='<span class="spinner"></span>Guardando...';btn.disabled=true;
   var now=new Date();var noItems=getNoItems();
   var payload={action:'saveInspeccion',fecha:now.toLocaleDateString('es-CO'),hora:now.toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'}),
-    nombre:usuarioActual.nombre,rol:usuarioActual.rol,maquina:maqSel.id,tipo_equipo:esGato?'Gato electrico':'Montacargas',
+    nombre:usuarioActual.nombre,maquina:maqSel.id,tipo_equipo:esGato?'Gato electrico':'Montacargas',
     horometro:esGato?'':document.getElementById('horometro').value,
     estatico:Object.values(respEst),dinamico:Object.values(respDin),
     items_no:noItems.join(' | '),total_no:noItems.length,observaciones:document.getElementById('observaciones').value};
