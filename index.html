@@ -404,7 +404,7 @@ textarea{resize:none;font-family:inherit;}
       </div>
     </div>
     <div class="bottom-bar">
-      <button class="btn-primary" id="btn4">Guardar en Sheets</button>
+      <button class="btn-primary" id="btn4">Enviar chequeo</button>
     </div>
   </div>
 
@@ -465,7 +465,7 @@ textarea{resize:none;font-family:inherit;}
       </div>
     </div>
     <div class="bottom-bar">
-      <button class="btn-primary" id="btn-moto2">Guardar en Sheets</button>
+      <button class="btn-primary" id="btn-moto2">Enviar chequeo</button>
     </div>
   </div>
 
@@ -1169,7 +1169,7 @@ function reiniciar(){
   equipoActual=null;
   document.getElementById('horometro').value='';document.getElementById('observaciones').value='';
   var na=document.getElementById('notas-alert');if(na)na.style.display='none';
-  var b4=document.getElementById('btn4');if(b4){b4.innerHTML='Guardar en Sheets';b4.disabled=false;}
+  var b4=document.getElementById('btn4');if(b4){b4.innerHTML='Enviar chequeo';b4.disabled=false;}
   var b1=document.getElementById('btn1');if(b1)b1.disabled=true;
   document.querySelectorAll('.maq-btn').forEach(function(b){b.classList.remove('selected');});
   document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
@@ -1207,7 +1207,7 @@ document.getElementById('btn-nueva').addEventListener('click',function(){
   respEst={};respDin={};
   document.getElementById('horometro').value='';document.getElementById('observaciones').value='';
   document.getElementById('notas-alert').style.display='none';
-  document.getElementById('btn4').innerHTML='Guardar en Sheets';document.getElementById('btn4').disabled=false;
+  document.getElementById('btn4').innerHTML='Enviar chequeo';document.getElementById('btn4').disabled=false;
   document.querySelectorAll('.maq-btn').forEach(function(b){b.classList.remove('selected');});
   maqSel=null;esGato=false;checkStep1();showPage('page-1');setProgress(10);
 });
@@ -1239,7 +1239,7 @@ async function enviarInspeccion(){
     if(noItems.length>0){var a=document.getElementById('notas-alert');a.style.display='block';a.innerHTML='<strong>Notificar al supervisor:</strong><br>'+noItems.join('<br>');}
     var bd=document.getElementById('btn-volver-dashboard');
     if(bd&&usuarioActual&&usuarioActual.rol==='jefe_logistica') bd.style.display='block';
-  }catch(err){hideLoading();btn.innerHTML='Guardar en Sheets';btn.disabled=false;alert('Error al guardar. Verifica la conexión.');}
+  }catch(err){hideLoading();btn.innerHTML='Enviar chequeo';btn.disabled=false;alert('Error al guardar. Verifica la conexión.');}
 }
 
 async function enviarMoto(){
@@ -1256,7 +1256,7 @@ async function enviarMoto(){
     await fetch(SHEET_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
     showPage('moto-3');setProgress(100);
     if(noItems.length>0){var a=document.getElementById('moto-notas-alert');a.style.display='block';a.innerHTML='<strong>Novedades:</strong><br>'+noItems.join('<br>');}
-  }catch(err){btn.innerHTML='Guardar en Sheets';btn.disabled=false;alert('Error al guardar.');}
+  }catch(err){btn.innerHTML='Enviar chequeo';btn.disabled=false;alert('Error al guardar.');}
 }
 
 // ═══════════════════════════════════════════════════════
