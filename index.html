@@ -1306,12 +1306,31 @@ function renderFlota(){
     var sem=e.semaforo||'verde';
     var empC=String(e.empresa).toUpperCase().includes('CONT')?'ebc':'ebt';
     var horas=parseFloat(e.horas_restantes)||0;
-    var horasText=horas<0?'Vencido':'+'+Math.round(horas)+' h';
-    var horasClass=horas<0?'danger':horas<=30?'warn':'ok';
-    var soatText=e.soat_alerta==='vencido'?'Vencido':e.soat_alerta==='proximo'?(e.dias_soat+' días'):'Vigente';
-    var soatClass=e.soat_alerta==='vencido'?'danger':e.soat_alerta==='proximo'?'warn':'ok';
+    var horasText, horasClass;
+    if(esGatoEq){
+      // Gato eléctrico: manejo por fecha (cada 90 días)
+      if(e.fecha_ultimo_mant_gato){
+        var diasGato = parseInt(e.dias_prox_mant_gato)||0;
+        horasText = diasGato < 0 ? 'Vencido' : diasGato+' días';
+        horasClass = diasGato < 0 ? 'danger' : diasGato <= 15 ? 'warn' : 'ok';
+      } else {
+        horasText = 'Sin fecha';
+        horasClass = 'warn';
+      }
+    } else {
+      horasText = horas<0 ? 'Vencido' : '+'+Math.round(horas)+' h';
+      horasClass = horas<0 ? 'danger' : horas<=30 ? 'warn' : 'ok';
+    }
+    var diasSoat = parseInt(e.dias_soat)||0;
+    var soatText = e.soat_alerta==='vencido' ? 'Vencido' :
+                   e.soat_alerta==='proximo' ? diasSoat+' días' :
+                   e.vencimiento_soat ? diasSoat+' días' : 'Sin SOAT';
+    var soatClass = e.soat_alerta==='vencido' ? 'danger' :
+                    e.soat_alerta==='proximo' ? 'warn' :
+                    e.vencimiento_soat ? 'ok' : '';
     var estadoL=sem==='rojo'?'Requiere atención urgente':sem==='amarillo'?'Requiere atención':'Operativo';
     var estadoC=sem==='rojo'?'eb-rojo':sem==='amarillo'?'eb-alerta':'eb-op';
+    var esGatoEq = String(e.tipo||'').toLowerCase().includes('gato');
     var horo=parseFloat(e.horometro_actual)||0;
     return '<div class="eq-card '+sem+'" onclick="abrirDetalle(\'' + e.id + '\')"><div class="eq-top"><div class="eq-id-big">'+e.id+'</div><span class="eq-badge-emp '+empC+'">'+e.empresa+'</span><div class="semaforo-dot sd-'+sem+'" style="margin-left:auto;"></div></div><div class="eq-desc-small">'+e.tipo+' · '+e.descripcion+'</div><div class="eq-stats-grid"><div class="eq-stat"><div class="eq-stat-lbl">Horómetro</div><div class="eq-stat-val">'+horo.toLocaleString()+' h</div></div><div class="eq-stat"><div class="eq-stat-lbl">Próx. mant.</div><div class="eq-stat-val '+horasClass+'">'+horasText+'</div></div><div class="eq-stat"><div class="eq-stat-lbl">SOAT</div><div class="eq-stat-val '+soatClass+'">'+soatText+'</div></div></div><div class="eq-footer-row"><span class="eq-estado-badge '+estadoC+'">'+estadoL+'</span><span style="color:#D01148;font-size:16px;">›</span></div></div>';
   }).join('');
@@ -1348,15 +1367,33 @@ async function abrirDetalle(equipoId){
   var pct=Math.min(100,Math.max(0,((horo-ultMant)/intervalo)*100));
   var fillClass=pct>=100?'hf-danger':pct>=80?'hf-warn':'hf-ok';
   var soat=equipoActual.vencimiento_soat?new Date(equipoActual.vencimiento_soat).toLocaleDateString('es-CO'):'—';
+  var diasSoatDet = parseInt(equipoActual.dias_soat)||0;
+  var soatClass = equipoActual.soat_alerta==='vencido'?'danger':equipoActual.soat_alerta==='proximo'?'warn':'ok';
+  var soatTexto = equipoActual.soat_alerta==='vencido'?soat+' (VENCIDO)':
+                  equipoActual.vencimiento_soat?(soat+' — '+diasSoatDet+' días'):soat;
   var costo=parseFloat(equipoActual.costo_acumulado)||0;
-  document.getElementById('det-horometro').innerHTML=
-    '<div class="det-field"><span class="det-field-lbl">Horómetro actual</span><span class="det-field-val">'+horo.toLocaleString()+' h</span></div>'
-    +'<div class="det-field"><span class="det-field-lbl">Último mant.</span><span class="det-field-val">'+ultMant.toLocaleString()+' h</span></div>'
-    +'<div class="det-field"><span class="det-field-lbl">Intervalo</span><span class="det-field-val">'+intervalo+' h</span></div>'
-    +'<div class="det-field"><span class="det-field-lbl">Próximo mant.</span><span class="det-field-val '+(horasRest<0?'danger':horasRest<=30?'warn':'ok')+'">'+proxMant.toLocaleString()+' h ('+(horasRest<0?'vencido':'+'+Math.round(horasRest)+' h restantes')+')</span></div>'
-    +'<div class="horo-progress"><div class="horo-fill '+fillClass+'" style="width:'+pct+'%"></div></div>'
-    +'<div class="horo-labels"><span>'+ultMant.toLocaleString()+' h</span><span>'+proxMant.toLocaleString()+' h</span></div>'
-    +'<div class="det-field"><span class="det-field-lbl">SOAT vence</span><span class="det-field-val '+(equipoActual.soat_alerta==='vencido'?'danger':equipoActual.soat_alerta==='proximo'?'warn':'')+'">'+soat+'</span></div>'
+  var esGatoDet = String(equipoActual.tipo||'').toLowerCase().includes('gato');
+  
+  var horoHtml;
+  if(esGatoDet){
+    var diasGatoDet = parseInt(equipoActual.dias_prox_mant_gato)||0;
+    var ultMantFecha = equipoActual.fecha_ultimo_mant_gato||'—';
+    var proxMantFecha = equipoActual.fecha_prox_mant_gato||'—';
+    var gatoClass = diasGatoDet<0?'danger':diasGatoDet<=15?'warn':'ok';
+    horoHtml = '<div class="det-field"><span class="det-field-lbl">Tipo de control</span><span class="det-field-val">Por fecha (cada 90 días)</span></div>'
+      +'<div class="det-field"><span class="det-field-lbl">Último mant.</span><span class="det-field-val">'+ultMantFecha+'</span></div>'
+      +'<div class="det-field"><span class="det-field-lbl">Próximo mant.</span><span class="det-field-val '+gatoClass+'">'+proxMantFecha+(diasGatoDet<0?' (VENCIDO)':' — '+diasGatoDet+' días restantes')+'</span></div>';
+  } else {
+    horoHtml = '<div class="det-field"><span class="det-field-lbl">Horómetro actual</span><span class="det-field-val">'+horo.toLocaleString()+' h</span></div>'
+      +'<div class="det-field"><span class="det-field-lbl">Último mant.</span><span class="det-field-val">'+ultMant.toLocaleString()+' h</span></div>'
+      +'<div class="det-field"><span class="det-field-lbl">Intervalo</span><span class="det-field-val">'+intervalo+' h</span></div>'
+      +'<div class="det-field"><span class="det-field-lbl">Próximo mant.</span><span class="det-field-val '+(horasRest<0?'danger':horasRest<=30?'warn':'ok')+'">'+proxMant.toLocaleString()+' h ('+(horasRest<0?'vencido':'+'+Math.round(horasRest)+' h restantes')+')</span></div>'
+      +'<div class="horo-progress"><div class="horo-fill '+fillClass+'" style="width:'+pct+'%"></div></div>'
+      +'<div class="horo-labels"><span>'+ultMant.toLocaleString()+' h</span><span>'+proxMant.toLocaleString()+' h</span></div>';
+  }
+  
+  document.getElementById('det-horometro').innerHTML = horoHtml
+    +'<div class="det-field"><span class="det-field-lbl">SOAT vence</span><span class="det-field-val '+soatClass+'">'+soatTexto+'</span></div>'
     +'<div class="det-field"><span class="det-field-lbl">Costo acumulado</span><span class="det-field-val">$'+costo.toLocaleString()+'</span></div>';
 
   await cargarEventos(equipoId);
