@@ -845,24 +845,23 @@ var MAQUINAS = [
 
 var ESTATICO = [
   {sec:'Estructura y tren de rodaje',items:[
-    {l:'Llantas',s:'Sin cortes ni desgaste excesivo'},
-    {l:'Rines y pernos (ambos lados)',s:'Sin daño ni aflojamiento'},
-    {l:'Horquillas y portahorquillas',s:'Sin deformaciones ni desnivel'},
-    {l:'Mástil, cadenas y rodamientos',s:'Sin desgaste ni deterioro'},
-    {l:'Mangueras hidráulicas',s:'Sin fisuras ni fugas'},
-    {l:'Guarda superior y carrocería',s:'Sin golpes ni aboyadura'},
+    {l:'Llantas',s:'En buen estado, sin cortes ni desgaste excesivo'},
+    {l:'Rines y pernos (ambos lados)',s:'Bien ajustados, sin daño ni aflojamiento'},
+    {l:'Horquillas y portahorquillas',s:'En buen estado, sin deformaciones ni desnivel'},
+    {l:'Mástil, cadenas y rodamientos',s:'En buen estado, sin desgaste ni deterioro'},
+    {l:'Mangueras hidráulicas',s:'En buen estado, sin fisuras ni fugas visibles'},
+    {l:'Guarda superior y carrocería',s:'En buen estado, sin golpes ni abolladuras'},
     {l:'Espejos retrovisores',s:'Completos y bien ajustados'}
   ]},
   {sec:'Niveles y fluidos',items:[
-    {l:'Aceite de motor',s:'Nivel dentro del rango (usar guantes)'},
+    {l:'Aceite de motor',s:'Nivel dentro del rango'},
     {l:'Aceite de transmisión',s:'Nivel correcto'},
     {l:'Aceite hidráulico',s:'Nivel correcto'},
     {l:'Líquido de frenos',s:'Dentro del rango'},
     {l:'Agua radiador / refrigerante',s:'Nivel correcto, sin fugas'},
-    {l:'Nivel ácido batería',s:'Electrolito en nivel de cada celda'}
   ]},
   {sec:'Eléctrico y motor',items:[
-    {l:'Cableado',s:'Aislado y sin fisuras'},
+    {l:'Cableado',s:'En buen estado, aislado y sin fisuras'},
     {l:'Batería y alternador',s:'Sin bornes sueltos ni sulfatados'},
     {l:'Radiador, aspas de ventilador y correas',s:'Buen estado'},
     {l:'Switch de llaves',s:'Funciona correctamente'}
@@ -870,7 +869,7 @@ var ESTATICO = [
   {sec:'Seguridad',items:[
     {l:'Cinturón de seguridad y silla',s:'Ajusta y asegura correctamente'},
     {l:'Extintor',s:'Con sello y fecha de recarga vigente'},
-    {l:'Cilindro GLP y líneas de combustible',s:'Cargado, sin fugas'}
+    {l:'Cilindro GLP y líneas de combustible',s:'Cargado y sin fugas visibles'}
   ]}
 ];
 
@@ -879,7 +878,7 @@ var DINAMICO = [
     {l:'Motor',s:'Sin ruidos extraños'},
     {l:'Luces (delantera, trasera, estroboscópica)',s:'En funcionamiento'},
     {l:'Pito y alarma de reversa',s:'Audibles'},
-    {l:'Panel de instrumentos e indicadores',s:'Sin alarmas activas'}
+    {l:'Panel de instrumentos e indicadores',s:'Sin alarmas ni luces de advertencia activas'}
   ]},
   {sec:'Frenos y dirección',items:[
     {l:'Freno de servicio',s:'Para la máquina y enciende el stop'},
@@ -927,7 +926,7 @@ var MOTO_ITEMS = [
     {l:'Guantes',s:'Puestos para conducir'}
   ]},
   {sec:'Inspección física',items:[
-    {l:'Llantas',s:'Sin cortes ni desgaste excesivo'},
+    {l:'Llantas',s:'En buen estado, sin cortes ni desgaste excesivo'},
     {l:'Freno delantero',s:'Funciona correctamente'},
     {l:'Freno trasero',s:'Funciona correctamente'},
     {l:'Luces delanteras',s:'Encendidas y funcionando'},
@@ -1070,7 +1069,7 @@ function buildChecklist(secciones,prefix,containerId){
       var row=document.createElement('div');row.className='item-row';
       var lbl=document.createElement('div');lbl.className='item-lbl';lbl.innerHTML=item.l+'<div class="item-std">'+item.s+'</div>';
       var tog=document.createElement('div');tog.className='si-no';
-      var bS=document.createElement('button');bS.className='sn';bS.id=key+'_s';bS.textContent='SI';
+      var bS=document.createElement('button');bS.className='sn';bS.id=key+'_s';bS.textContent='OK';
       var bN=document.createElement('button');bN.className='sn';bN.id=key+'_n';bN.textContent='NO';
       (function(k,p){bS.addEventListener('click',function(){marcar(p,k,'S');});bN.addEventListener('click',function(){marcar(p,k,'N');});})(key,prefix);
       tog.appendChild(bS);tog.appendChild(bN);row.appendChild(lbl);row.appendChild(tog);c.appendChild(row);idx++;
@@ -1394,6 +1393,7 @@ async function abrirDetalle(equipoId){
   
   document.getElementById('det-horometro').innerHTML = horoHtml
     +'<div class="det-field"><span class="det-field-lbl">SOAT vence</span><span class="det-field-val '+soatClass+'">'+soatTexto+'</span></div>'
+    +renderExtintorDet(equipoActual)
     +'<div class="det-field"><span class="det-field-lbl">Costo acumulado</span><span class="det-field-val">$'+costo.toLocaleString()+'</span></div>';
 
   await cargarEventos(equipoId);
@@ -1416,6 +1416,33 @@ async function cargarEventos(equipoId){
     } else div.innerHTML='<div class="mec-no-data">Sin eventos registrados.</div>';
   }catch(e){div.innerHTML='<div class="mec-no-data">Error al cargar eventos.</div>';}
   finally{hideLoading();}
+}
+
+function renderExtintorCard(eq){
+  var vencExt = eq&&(eq.vencimiento_extintor||eq.extintor_vencimiento)||'';
+  if(!vencExt) return '<div class="eq-stat"><div class="eq-stat-lbl">Extintor</div><div class="eq-stat-val" style="color:#AAA;">Sin fecha</div></div>';
+  try{
+    var d=new Date(vencExt), hoy=new Date();
+    var dias=Math.floor((d-hoy)/86400000);
+    var cls=dias<0?'danger':dias<=30?'warn':'ok';
+    var texto=dias<0?'Vencido':dias+' días';
+    return '<div class="eq-stat"><div class="eq-stat-lbl">Extintor</div><div class="eq-stat-val '+cls+'">'+texto+'</div></div>';
+  }catch(e){return '<div class="eq-stat"><div class="eq-stat-lbl">Extintor</div><div class="eq-stat-val">'+vencExt+'</div></div>';}
+}
+
+function renderExtintorDet(eq){
+  if(!eq) return '';
+  var vencExt = eq.vencimiento_extintor||eq.extintor_vencimiento||'';
+  if(!vencExt) return '<div class="det-field"><span class="det-field-lbl">Extintor vence</span><span class="det-field-val" style="color:#AAA;">Sin fecha registrada</span></div>';
+  try{
+    var d = new Date(vencExt);
+    var hoy = new Date();
+    var dias = Math.floor((d-hoy)/86400000);
+    var fechaStr = d.toLocaleDateString('es-CO');
+    var cls = dias<0?'danger':dias<=30?'warn':'ok';
+    var texto = fechaStr+' — '+(dias<0?'VENCIDO':dias+' días restantes');
+    return '<div class="det-field"><span class="det-field-lbl">Extintor vence</span><span class="det-field-val '+cls+'">'+texto+'</span></div>';
+  }catch(e){return '<div class="det-field"><span class="det-field-lbl">Extintor vence</span><span class="det-field-val">'+vencExt+'</span></div>';}
 }
 
 function cerrarDetalle(){
